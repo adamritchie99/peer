@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Peer Auto</title>
-  <!-- Google Fonts: Montserrat for Supreme-like bold italic look -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
     body, html {
@@ -18,11 +17,8 @@
       flex-direction: column;
     }
 
-    main {
-      flex: 1;
-    }
+    main { flex: 1; }
 
-    /* Logo / Home button - top left, Supreme-inspired */
     .logo {
       position: fixed;
       top: 1.5rem;
@@ -51,9 +47,7 @@
       box-shadow: 0 8px 20px rgba(237,28,36,0.5);
     }
 
-    .logo a:active {
-      transform: scale(0.98);
-    }
+    .logo a:active { transform: scale(0.98); }
 
     .hero {
       min-height: 100vh;
@@ -65,19 +59,10 @@
       padding: 6rem 1.5rem 2rem;
     }
 
-    h1 {
-      font-size: clamp(2.5rem, 8vw, 4.5rem);
-      margin: 0 0 1rem 0;
-    }
+    h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 0 0 1rem 0; }
 
-    p {
-      font-size: clamp(1.2rem, 4vw, 1.6rem);
-      max-width: 40rem;
-      opacity: 0.9;
-      margin: 0 0 3rem 0;
-    }
+    p { font-size: clamp(1.2rem, 4vw, 1.6rem); max-width: 40rem; opacity: 0.9; margin: 0 0 3rem 0; }
 
-    /* Vehicle selector section */
     .vehicle-selector {
       width: 100%;
       max-width: 900px;
@@ -89,10 +74,25 @@
     .vehicle-selector h2 {
       font-size: clamp(1.8rem, 5vw, 2.4rem);
       margin: 0 0 1.8rem 0;
-      color: #ffffff;
+    }
+
+    .selector-container {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
     }
 
     .dropdown-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .action-buttons {
       display: flex;
       flex-wrap: wrap;
       gap: 1.2rem;
@@ -105,18 +105,29 @@
       max-width: 280px;
     }
 
-    /* New generic button - wider, bubble-like styling */
-    .generic-button {
-      flex-basis: 66%;               /* Roughly 2/3 of the row's width */
-      max-width: 600px;              /* Cap it so it doesn't get too wide on huge screens */
-      min-width: 280px;              /* Still usable on smaller screens */
-      margin: 1rem auto 0;           /* Extra top/bottom spacing, centered */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2rem 0;
+      color: #777;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #444;
+      margin: 0 1rem;
     }
 
     button, select {
       width: 100%;
-      padding: 0.9rem 1.2rem;
-      font-size: 1.1rem;
+      padding: 1rem 1.4rem;
+      font-size: 1.15rem;
       background: #1a1a1a;
       color: white;
       border: 1px solid #444;
@@ -127,42 +138,47 @@
 
     button {
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
     }
 
-    button:hover, select:hover {
-      background: #222;
-      border-color: #666;
-    }
+    button:hover, select:hover { background: #222; border-color: #666; }
 
     button:focus, select:focus {
       outline: none;
       border-color: #888;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
     }
 
     select {
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 12px;
+      background-position: right 1.2rem center;
+      background-size: 14px;
     }
 
-    select option {
-      background: #1a1a1a;
-      color: white;
+    .vehicle-btn {
+      flex: 1;
+      min-width: 220px;
+      max-width: 320px;
     }
 
-    select option:disabled {
-      color: #888;
+    .generic-btn {
+      flex-basis: 66%;
+      max-width: 600px;
+      min-width: 300px;
+      background: #222;
+      border-color: #555;
+      font-size: 1.25rem;
+      padding: 1.2rem 1.6rem;
     }
 
-    select:invalid {
-      color: #aaa;
+    .generic-btn:hover {
+      background: #2a2a2a;
+      border-color: #777;
+      box-shadow: 0 0 20px rgba(255,255,255,0.08);
     }
 
-    /* Footer blurb */
     footer {
       text-align: center;
       padding: 2rem 1rem;
@@ -173,32 +189,17 @@
     }
 
     @media (max-width: 600px) {
-      .dropdown-container {
-        flex-direction: column;
-        align-items: center;
-      }
-      .dropdown-group, .generic-button {
-        max-width: 100%;
-        flex-basis: auto;
-      }
-      .logo {
-        top: 1rem;
-        left: 1rem;
-      }
-      .logo a {
-        font-size: clamp(1.6rem, 6vw, 2.2rem);
-        padding: 0.3rem 0.9rem;
-      }
-      footer {
-        font-size: 0.85rem;
-        padding: 1.5rem 1rem;
-      }
+      .dropdown-container, .action-buttons { flex-direction: column; align-items: center; }
+      .dropdown-group, .vehicle-btn, .generic-btn { max-width: 100%; flex-basis: auto; }
+      .or-divider { margin: 2.5rem 0; }
+      .logo { top: 1rem; left: 1rem; }
+      .logo a { font-size: clamp(1.6rem, 6vw, 2.2rem); padding: 0.3rem 0.9rem; }
+      footer { font-size: 0.85rem; padding: 1.5rem 1rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Logo / Home button -->
   <div class="logo">
     <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Peer Auto</a>
   </div>
@@ -208,44 +209,48 @@
       <h1>Welcome to the future of automotive aftermarket</h1>
       <p>Zero fees to buy or sell any automotive products</p>
 
-      <!-- Vehicle selector -->
       <div class="vehicle-selector">
         <h2>What vehicle are you shopping for?</h2>
         
-        <div class="dropdown-container">
-          <div class="dropdown-group">
-            <select name="year" id="year" required>
-              <option value="" disabled selected>Select Year</option>
-            </select>
+        <div class="selector-container">
+          <div class="dropdown-container">
+            <div class="dropdown-group">
+              <select name="year" id="year" required>
+                <option value="" disabled selected>Select Year</option>
+              </select>
+            </div>
+            <div class="dropdown-group">
+              <select name="make" id="make" required disabled>
+                <option value="" disabled selected>Select Make</option>
+              </select>
+            </div>
+            <div class="dropdown-group">
+              <select name="model" id="model" required disabled>
+                <option value="" disabled selected>Select Model</option>
+              </select>
+            </div>
           </div>
 
-          <div class="dropdown-group">
-            <select name="make" id="make" required disabled>
-              <option value="" disabled selected>Select Make</option>
-            </select>
+          <div class="action-buttons">
+            <button class="vehicle-btn" type="button" id="search-vehicle-btn">
+              Search Vehicle Parts
+            </button>
           </div>
-
-          <div class="dropdown-group">
-            <select name="model" id="model" required disabled>
-              <option value="" disabled selected>Select Model</option>
-            </select>
-          </div>
-
-          <!-- New Generic Automotive Goods button -->
-          <button class="generic-button" type="button" id="generic-btn">
-            Generic Automotive Goods
-          </button>
         </div>
+
+        <div class="or-divider">OR</div>
+
+        <button class="generic-btn" type="button" id="generic-btn">
+          Generic Automotive Goods
+        </button>
       </div>
     </div>
   </main>
 
-  <!-- Footer -->
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
 
-  <!-- jQuery + CarQuery API logic -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
     $(document).ready(function() {
@@ -256,7 +261,6 @@
       const makeSelect = $('#make');
       const modelSelect = $('#model');
 
-      // Populate years
       for (let y = currentYear + 1; y >= minYear; y--) {
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
@@ -271,17 +275,13 @@
             const makes = data.Makes || [];
             if (makes.length > 0) {
               makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
-              makes.forEach(make => {
-                makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`);
-              });
+              makes.forEach(make => makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`));
               makeSelect.prop('disabled', false);
             } else {
               $.getJSON(`${apiBase}?callback=?&cmd=getMakes&sold_in_us=1`, function(data) {
                 const allMakes = data.Makes || [];
                 allMakes.sort((a, b) => a.make_display.localeCompare(b.make_display));
-                allMakes.forEach(make => {
-                  makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`);
-                });
+                allMakes.forEach(make => makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`));
                 makeSelect.prop('disabled', false);
               });
             }
@@ -299,18 +299,14 @@
             const models = data.Models || [];
             if (models.length > 0) {
               models.sort((a, b) => a.model_name.localeCompare(b.model_name));
-              models.forEach(model => {
-                modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`);
-              });
+              models.forEach(model => modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`));
               modelSelect.prop('disabled', false);
             } else {
               $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&sold_in_us=1`, function(data) {
                 const allModels = data.Models || [];
                 if (allModels.length > 0) {
                   allModels.sort((a, b) => a.model_name.localeCompare(b.model_name));
-                  allModels.forEach(model => {
-                    modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`);
-                  });
+                  allModels.forEach(model => modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`));
                   modelSelect.prop('disabled', false);
                 } else {
                   modelSelect.append('<option value="" disabled>No models available</option>');
@@ -321,18 +317,20 @@
         }
       });
 
-      modelSelect.on('change', function() {
-        console.log('Selected:', {
-          year: yearSelect.val(),
-          make: makeSelect.find('option:selected').text(),
-          model: $(this).val()
-        });
+      // Placeholder actions – replace with real navigation later
+      $('#search-vehicle-btn').on('click', function() {
+        const y = yearSelect.val(), m = makeSelect.val(), mod = modelSelect.val();
+        if (y && m && mod) {
+          alert(`Redirecting to vehicle-specific parts for ${y} ${makeSelect.find('option:selected').text()} ${mod}`);
+          // e.g., window.location = `/parts?year=${y}&make=${m}&model=${mod}`;
+        } else {
+          alert('Please select year, make, and model first!');
+        }
       });
 
-      // Optional: placeholder for generic button click
       $('#generic-btn').on('click', function() {
-        alert('Browsing generic/universal automotive goods! (Add your logic here later)');
-        // e.g., redirect, show modal, load universal parts section, etc.
+        alert('Redirecting to generic/universal automotive goods!');
+        // e.g., window.location = '/generic-parts';
       });
     });
   </script>
