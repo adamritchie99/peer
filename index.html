@@ -1,31 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Peer Auto</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Montserrat:ital,wght@1,800;1,900&display=swap" rel="stylesheet">
-  <style>
-    /* ... your existing styles here ... */
-
-    /* Add the logo styles above here */
-    .logo { ... }  /* paste from above */
-    .logo a { ... }
-    .logo a:hover { ... }
-    .logo a:active { ... }
-
-    /* Optional: give hero some top padding so logo doesn't overlap title on small screens */
-    .hero {
-      min-height: 100vh;
-      padding-top: 6rem;  /* space for fixed logo */
-      /* rest of hero styles */
-    }
-  </style>
-</head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Peer Auto</title>
+  <!-- Google Fonts: Montserrat for Supreme-like bold italic look -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
     body, html {
       margin: 0;
@@ -36,14 +16,47 @@
       color: white;
     }
 
+    /* Logo / Home button - top left, Supreme-inspired */
+    .logo {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 1000;
+    }
+
+    .logo a {
+      display: inline-block;
+      background: #ED1C24;           /* Classic Supreme red */
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      letter-spacing: -0.05em;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .logo a:hover {
+      transform: scale(1.05) rotate(-2deg);
+      box-shadow: 0 8px 20px rgba(237,28,36,0.5);
+    }
+
+    .logo a:active {
+      transform: scale(0.98);
+    }
+
     .hero {
-      min-height: 100vh;          /* changed to min-height so content below can push it */
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 0 1.5rem;
+      padding: 6rem 1.5rem 2rem;     /* Added top padding for fixed logo */
     }
 
     h1 {
@@ -58,7 +71,7 @@
       margin: 0 0 3rem 0;
     }
 
-    /* New vehicle selector section */
+    /* Vehicle selector section */
     .vehicle-selector {
       width: 100%;
       max-width: 900px;
@@ -93,8 +106,8 @@
       background: #1a1a1a;
       color: white;
       border: 1px solid #444;
-      border-radius: 12px;           /* soft rounded corners */
-      appearance: none;              /* remove default arrow */
+      border-radius: 12px;
+      appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 1rem center;
@@ -118,7 +131,6 @@
       color: #888;
     }
 
-    /* Optional: make it look disabled when no value selected */
     select:invalid {
       color: #aaa;
     }
@@ -131,15 +143,28 @@
       .dropdown-group {
         max-width: 100%;
       }
+      .logo {
+        top: 1rem;
+        left: 1rem;
+      }
+      .logo a {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+        padding: 0.3rem 0.9rem;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Logo / Home button -->
+  <div class="logo">
+    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Peer Auto</a>
+  </div>
+
   <div class="hero">
     <h1>Welcome to the future of automotive aftermarket</h1>
     <p>Zero fees to buy or sell any automotive products</p>
 
-    <!-- New vehicle selector section -->
+    <!-- Vehicle selector -->
     <div class="vehicle-selector">
       <h2>What vehicle are you shopping for?</h2>
       
@@ -147,50 +172,47 @@
         <div class="dropdown-group">
           <select name="year" id="year" required>
             <option value="" disabled selected>Select Year</option>
-            <!-- Years populated by JS -->
           </select>
         </div>
 
         <div class="dropdown-group">
           <select name="make" id="make" required disabled>
             <option value="" disabled selected>Select Make</option>
-            <!-- Makes populated by JS -->
           </select>
         </div>
 
         <div class="dropdown-group">
           <select name="model" id="model" required disabled>
             <option value="" disabled selected>Select Model</option>
-            <!-- Models populated by JS -->
           </select>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- jQuery + CarQuery API logic -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
     $(document).ready(function() {
       const currentYear = new Date().getFullYear();
-      const minYear = 1900; // As requested, back to 1900
+      const minYear = 1900;
       const apiBase = 'https://www.carqueryapi.com/api/0.3/';
       const yearSelect = $('#year');
       const makeSelect = $('#make');
       const modelSelect = $('#model');
 
-      // Populate years from current +1 to minYear descending
+      // Populate years (current +1 down to 1900)
       for (let y = currentYear + 1; y >= minYear; y--) {
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
 
-      // When year changes, fetch makes for that year if possible
+      // Year change → load makes
       yearSelect.on('change', function() {
         const year = $(this).val();
         makeSelect.empty().append('<option value="" disabled selected>Select Make</option>').prop('disabled', true);
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
 
         if (year) {
-          // Fetch makes for the selected year
           $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`, function(data) {
             const makes = data.Makes || [];
             if (makes.length > 0) {
@@ -200,7 +222,7 @@
               });
               makeSelect.prop('disabled', false);
             } else {
-              // If no data (e.g., year <1941 or >max), fetch all makes
+              // Fallback: all makes if no year-specific data
               $.getJSON(`${apiBase}?callback=?&cmd=getMakes&sold_in_us=1`, function(data) {
                 const allMakes = data.Makes || [];
                 allMakes.sort((a, b) => a.make_display.localeCompare(b.make_display));
@@ -214,7 +236,7 @@
         }
       });
 
-      // When make changes, fetch models for year and make
+      // Make change → load models for that year + make
       makeSelect.on('change', function() {
         const make = $(this).val();
         const year = yearSelect.val();
@@ -230,7 +252,7 @@
               });
               modelSelect.prop('disabled', false);
             } else {
-              // Fallback: get all models for make without year
+              // Fallback: all models for make
               $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&sold_in_us=1`, function(data) {
                 const allModels = data.Models || [];
                 if (allModels.length > 0) {
@@ -248,13 +270,15 @@
         }
       });
 
-      // Optional: when model changes, you could fetch trims if needed
+      // Optional: log selection (you can replace with real action later)
       modelSelect.on('change', function() {
-        // For now, just log or add more functionality later
-        console.log('Selected: Year=' + yearSelect.val() + ', Make=' + makeSelect.val() + ', Model=' + $(this).val());
+        console.log('Selected:', {
+          year: yearSelect.val(),
+          make: makeSelect.find('option:selected').text(),
+          model: $(this).val()
+        });
       });
     });
   </script>
 </body>
 </html>
-
