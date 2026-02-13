@@ -105,7 +105,15 @@
       max-width: 280px;
     }
 
-    select {
+    /* New generic button - wider, bubble-like styling */
+    .generic-button {
+      flex-basis: 66%;               /* Roughly 2/3 of the row's width */
+      max-width: 600px;              /* Cap it so it doesn't get too wide on huge screens */
+      min-width: 280px;              /* Still usable on smaller screens */
+      margin: 1rem auto 0;           /* Extra top/bottom spacing, centered */
+    }
+
+    button, select {
       width: 100%;
       padding: 0.9rem 1.2rem;
       font-size: 1.1rem;
@@ -113,19 +121,32 @@
       color: white;
       border: 1px solid #444;
       border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    button:hover, select:hover {
+      background: #222;
+      border-color: #666;
+    }
+
+    button:focus, select:focus {
+      outline: none;
+      border-color: #888;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+    }
+
+    select {
       appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 1rem center;
       background-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    select:focus {
-      outline: none;
-      border-color: #888;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
     }
 
     select option {
@@ -156,8 +177,9 @@
         flex-direction: column;
         align-items: center;
       }
-      .dropdown-group {
+      .dropdown-group, .generic-button {
         max-width: 100%;
+        flex-basis: auto;
       }
       .logo {
         top: 1rem;
@@ -208,12 +230,17 @@
               <option value="" disabled selected>Select Model</option>
             </select>
           </div>
+
+          <!-- New Generic Automotive Goods button -->
+          <button class="generic-button" type="button" id="generic-btn">
+            Generic Automotive Goods
+          </button>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Footer with Option 4 -->
+  <!-- Footer -->
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
@@ -300,6 +327,12 @@
           make: makeSelect.find('option:selected').text(),
           model: $(this).val()
         });
+      });
+
+      // Optional: placeholder for generic button click
+      $('#generic-btn').on('click', function() {
+        alert('Browsing generic/universal automotive goods! (Add your logic here later)');
+        // e.g., redirect, show modal, load universal parts section, etc.
       });
     });
   </script>
