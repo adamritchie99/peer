@@ -19,7 +19,7 @@
 
     main { flex: 1; }
 
-    /* Logo & Sell button - fixed top corners */
+    /* Logo top-left */
     .logo {
       position: fixed;
       top: 1.5rem;
@@ -27,14 +27,7 @@
       z-index: 1000;
     }
 
-    .sell-btn {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.5rem;
-      z-index: 1000;
-    }
-
-    .logo a, .sell-btn a {
+    .logo a {
       display: inline-block;
       background: #ED1C24;
       color: white;
@@ -50,17 +43,96 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 
-    .logo a:hover, .sell-btn a:hover {
+    .logo a:hover {
       transform: scale(1.05) rotate(-1.5deg);
       box-shadow: 0 8px 20px rgba(237,28,36,0.5);
     }
 
-    .logo a:active, .sell-btn a:active {
-      transform: scale(0.98);
+    /* Hamburger menu top-right */
+    .menu-toggle {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 1001;
+      cursor: pointer;
     }
 
-    .sell-btn a {
-      font-size: clamp(1.3rem, 3.8vw, 1.9rem); /* Slightly smaller than logo for balance */
+    .hamburger {
+      width: 40px;
+      height: 30px;
+      position: relative;
+      display: block;
+    }
+
+    .hamburger span {
+      display: block;
+      position: absolute;
+      height: 4px;
+      width: 100%;
+      background: white;
+      border-radius: 4px;
+      opacity: 1;
+      left: 0;
+      transform: rotate(0deg);
+      transition: all 0.35s ease-in-out;
+    }
+
+    .hamburger span:nth-child(1) { top: 0; }
+    .hamburger span:nth-child(2) { top: 13px; }
+    .hamburger span:nth-child(3) { top: 26px; }
+
+    input#menu-check:checked ~ .hamburger span:nth-child(1) {
+      transform: rotate(135deg);
+      top: 13px;
+    }
+
+    input#menu-check:checked ~ .hamburger span:nth-child(2) {
+      opacity: 0;
+      left: -60px;
+    }
+
+    input#menu-check:checked ~ .hamburger span:nth-child(3) {
+      transform: rotate(-135deg);
+      top: 13px;
+    }
+
+    /* Dropdown menu */
+    .dropdown-menu {
+      position: fixed;
+      top: 5rem;
+      right: 1.5rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      padding: 1rem 0;
+      min-width: 180px;
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 999;
+    }
+
+    input#menu-check:checked ~ .dropdown-menu {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 0.9rem 1.5rem;
+      color: white;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: background 0.2s ease;
+    }
+
+    .dropdown-menu a:hover {
+      background: #222;
+      color: #ED1C24;
     }
 
     .hero {
@@ -70,7 +142,7 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 7rem 1.5rem 2rem; /* Extra top padding for both fixed elements */
+      padding: 7rem 1.5rem 2rem;
     }
 
     h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 0 0 1rem 0; }
@@ -206,10 +278,11 @@
       .dropdown-container, .action-buttons { flex-direction: column; align-items: center; }
       .dropdown-group, .vehicle-btn, .generic-btn { max-width: 100%; flex-basis: auto; }
       .or-divider { margin: 2.5rem 0; }
-      .logo, .sell-btn { top: 1rem; }
+      .logo, .menu-toggle { top: 1rem; }
       .logo { left: 1rem; }
-      .sell-btn { right: 1rem; }
-      .logo a, .sell-btn a { font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 0.4rem 1rem; }
+      .menu-toggle { right: 1rem; }
+      .logo a { font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 0.4rem 1rem; }
+      .dropdown-menu { right: 1rem; width: 200px; }
       footer { font-size: 0.85rem; padding: 1.5rem 1rem; }
     }
   </style>
@@ -221,9 +294,20 @@
     <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Peer Auto</a>
   </div>
 
-  <!-- Sell button top-right -->
-  <div class="sell-btn">
-    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">I want to sell!</a>
+  <!-- Hamburger menu top-right -->
+  <div class="menu-toggle">
+    <input type="checkbox" id="menu-check" hidden />
+    <label for="menu-check" class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <div class="dropdown-menu">
+      <a href="#" onclick="alert('Going to Buy page / dashboard'); return false;">I want to buy</a>
+      <a href="#" onclick="alert('Going to Sell dashboard / listings'); return false;">I want to sell</a>
+      <a href="#" onclick="alert('Going to Account / Profile'); return false;">Account</a>
+    </div>
   </div>
 
   <main>
