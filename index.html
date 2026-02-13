@@ -125,41 +125,113 @@
         <div class="dropdown-group">
           <select name="year" id="year" required>
             <option value="" disabled selected>Select Year</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <!-- Add more years as needed, or generate with JS -->
+            <!-- Years populated by JS -->
           </select>
         </div>
 
         <div class="dropdown-group">
-          <select name="make" id="make" required>
+          <select name="make" id="make" required disabled>
             <option value="" disabled selected>Select Make</option>
-            <option value="Toyota">Toyota</option>
-            <option value="Ford">Ford</option>
-            <option value="Honda">Honda</option>
-            <option value="Chevrolet">Chevrolet</option>
-            <option value="BMW">BMW</option>
-            <option value="Mercedes-Benz">Mercedes-Benz</option>
-            <!-- Add more makes -->
+            <!-- Makes populated by JS -->
           </select>
         </div>
 
         <div class="dropdown-group">
-          <select name="model" id="model" required>
+          <select name="model" id="model" required disabled>
             <option value="" disabled selected>Select Model</option>
-            <option value="Camry">Camry</option>
-            <option value="F-150">F-150</option>
-            <option value="Civic">Civic</option>
-            <option value="Silverado">Silverado</option>
-            <!-- These would change based on make/year in real version -->
+            <!-- Models populated by JS -->
           </select>
         </div>
       </div>
     </div>
   </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      const currentYear = new Date().getFullYear();
+      const minYear = 1900; // As requested, back to 1900
+      const apiBase = 'https://www.carqueryapi.com/api/0.3/';
+      const yearSelect = $('#year');
+      const makeSelect = $('#make');
+      const modelSelect = $('#model');
+
+      // Populate years from current +1 to minYear descending
+      for (let y = currentYear + 1; y >= minYear; y--) {
+        yearSelect.append(`<option value="${y}">${y}</option>`);
+      }
+
+      // When year changes, fetch makes for that year if possible
+      yearSelect.on('change', function() {
+        const year = $(this).val();
+        makeSelect.empty().append('<option value="" disabled selected>Select Make</option>').prop('disabled', true);
+        modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
+
+        if (year) {
+          // Fetch makes for the selected year
+          $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`, function(data) {
+            const makes = data.Makes || [];
+            if (makes.length > 0) {
+              makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+              makes.forEach(make => {
+                makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`);
+              });
+              makeSelect.prop('disabled', false);
+            } else {
+              // If no data (e.g., year <1941 or >max), fetch all makes
+              $.getJSON(`${apiBase}?callback=?&cmd=getMakes&sold_in_us=1`, function(data) {
+                const allMakes = data.Makes || [];
+                allMakes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+                allMakes.forEach(make => {
+                  makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`);
+                });
+                makeSelect.prop('disabled', false);
+              });
+            }
+          });
+        }
+      });
+
+      // When make changes, fetch models for year and make
+      makeSelect.on('change', function() {
+        const make = $(this).val();
+        const year = yearSelect.val();
+        modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
+
+        if (make && year) {
+          $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&year=${year}&sold_in_us=1`, function(data) {
+            const models = data.Models || [];
+            if (models.length > 0) {
+              models.sort((a, b) => a.model_name.localeCompare(b.model_name));
+              models.forEach(model => {
+                modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`);
+              });
+              modelSelect.prop('disabled', false);
+            } else {
+              // Fallback: get all models for make without year
+              $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&sold_in_us=1`, function(data) {
+                const allModels = data.Models || [];
+                if (allModels.length > 0) {
+                  allModels.sort((a, b) => a.model_name.localeCompare(b.model_name));
+                  allModels.forEach(model => {
+                    modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`);
+                  });
+                  modelSelect.prop('disabled', false);
+                } else {
+                  modelSelect.append('<option value="" disabled>No models available</option>');
+                }
+              });
+            }
+          });
+        }
+      });
+
+      // Optional: when model changes, you could fetch trims if needed
+      modelSelect.on('change', function() {
+        // For now, just log or add more functionality later
+        console.log('Selected: Year=' + yearSelect.val() + ', Make=' + makeSelect.val() + ', Model=' + $(this).val());
+      });
+    });
+  </script>
 </body>
 </html>
