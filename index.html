@@ -355,19 +355,20 @@
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
 
-      // Load ALL makes once on page load (fast, small list ~150 items)
-      $.getJSON(`${apiBase}GetAllMakes?format=json`, function(data) {
+      // Load ALL makes once on page load using correct endpoint
+      $.getJSON(`${apiBase}GetMakes?format=json`, function(data) {
         const makes = data.Results || [];
         if (makes.length > 0) {
           makes.sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
           makes.forEach(m => {
             makeSelect.append(`<option value="${m.Make_Name}">${m.Make_Name}</option>`);
           });
+          makeStatus.text(''); // Clear any old error
         } else {
-          makeStatus.text('No makes available — check connection');
+          makeStatus.text('No makes available from API');
         }
       }).fail(() => {
-        makeStatus.text('Error loading makes — check your internet');
+        makeStatus.text('Error loading makes — check connection or try refresh');
       });
 
       // Enable make dropdown when a year is selected
@@ -430,7 +431,6 @@
         const mod = modelSelect.val();
         if (y && m && mod) {
           alert(`Redirecting to vehicle-specific parts for ${y} ${m} ${mod}`);
-          // In real site: window.location = `/parts?year=${y}&make=${encodeURIComponent(m)}&model=${encodeURIComponent(mod)}`;
         }
       });
 
