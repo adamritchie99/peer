@@ -334,86 +334,66 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script>
     $(document).ready(function() {
-      const apiBase = 'https://carapi.app/api/';
+      const currentYear = new Date().getFullYear();
+      const minYear = 1900;
+      const apiBase = 'https://www.carqueryapi.com/api/0.3/';
       const yearSelect = $('#year');
       const makeSelect = $('#make');
       const modelSelect = $('#model');
       const searchBtn = $('#search-vehicle-btn');
-      const clearBtn = $('#clear-vehicle-btn');
       const makeStatus = $('#make-status');
       const modelStatus = $('#model-status');
 
-      // For full access later: const apiToken = 'your_jwt_here'; // Get from dashboard after signup
-      // Then add to fetches: headers: { 'Authorization': `Bearer ${apiToken}` }
+      // Populate years (newest first)
+      for (let y = currentYear + 1; y >= minYear; y--) {
+        yearSelect.append(`<option value="${y}">${y}</option>`);
+      }
 
-      // Load years on page load
-      $.getJSON(`${apiBase}years`, function(data) {
-        const years = data.data || [];
-        if (years.length > 0) {
-          // Sort descending (newest first)
-          years.sort((a, b) => b.year - a.year);
-          years.forEach(y => {
-            yearSelect.append(`<option value="${y.year}">${y.year}</option>`);
-          });
-          makeStatus.text(''); 
-        } else {
-          makeStatus.text('No years available — API issue?');
-        }
-      }).fail(() => {
-        makeStatus.text('Error loading years — check connection or refresh');
-      });
-
-      // Year change → load makes for that year
       yearSelect.on('change', function() {
-        const yearVal = $(this).val();
+        const year = $(this).val();
         makeSelect.empty().append('<option value="" disabled selected>Select Make</option>').prop('disabled', true);
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
-        modelStatus.text('');
         makeStatus.text('');
+        modelStatus.text('');
 
-        if (yearVal) {
+        if (year) {
           makeStatus.text('Loading makes...');
-          makeSelect.prop('disabled', true);
-          $.getJSON(`${apiBase}makes?year=${yearVal}`, function(data) {
-            const makes = data.data || [];
+          $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`, function(data) {
+            const makes = data.Makes || [];
             makeStatus.text('');
             if (makes.length > 0) {
-              makes.sort((a, b) => a.make.localeCompare(b.make));
-              makes.forEach(m => {
-                makeSelect.append(`<option value="${m.make}">${m.make}</option>`);
+              makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+              makes.forEach(make => {
+                makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`);
               });
               makeSelect.prop('disabled', false);
             } else {
-              makeStatus.text('No makes for this year');
+              makeStatus.text('No makes found for this year');
             }
             updateSearchButton();
           }).fail(() => {
-            makeStatus.text('Error loading makes');
+            makeStatus.text('Error loading makes — try refresh');
             updateSearchButton();
           });
         }
         updateSearchButton();
       });
 
-      // Make change → load models for make + year
-      makeSelect.on('change', loadModels);
-      yearSelect.on('change', loadModels); // In case make pre-selected (rare)
-
-      function loadModels() {
+      makeSelect.on('change', function() {
+        const make = $(this).val();
         const year = yearSelect.val();
-        const make = makeSelect.val();
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
         modelStatus.text('');
 
         if (make && year) {
           modelStatus.text('Loading models...');
-          $.getJSON(`${apiBase}models?make=${encodeURIComponent(make)}&year=${year}`, function(data) {
-            const models = data.data || [];
+          $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&year=${year}&sold_in_us=1`, function(data) {
+            const models = data.Models || [];
             modelStatus.text('');
             if (models.length > 0) {
-              models.sort((a, b) => a.model.localeCompare(b.model));
-              models.forEach(m => {
-                modelSelect.append(`<option value="${m.model}">${m.model}</option>`);
+              models.sort((a, b) => a.model_name.localeCompare(b.model_name));
+              models.forEach(model => {
+                modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`);
               });
               modelSelect.prop('disabled', false);
             } else {
@@ -425,7 +405,7 @@
             updateSearchButton();
           });
         }
-      }
+      });
 
       function updateSearchButton() {
         const y = yearSelect.val();
@@ -442,6 +422,8 @@
         const mod = modelSelect.val();
         if (y && m && mod) {
           alert(`Redirecting to vehicle-specific parts for ${y} ${m} ${mod}`);
+        } else {
+          alert('Please select year, make, and model first!');
         }
       });
 
