@@ -17,105 +17,69 @@
       flex-direction: column;
     }
     main { flex: 1; }
-    .logo {
-      position: fixed;
-      top: 1.5rem;
-      left: 1.5rem;
+
+    /* Top bar with logo + centered nav pill */
+    .top-bar {
+      position: sticky;
+      top: 0;
       z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: rgba(15,15,15,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #222;
+      transition: all 0.3s ease;
+    }
+    .top-bar.scrolled {
+      padding: 0.8rem 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     .logo a {
-      display: inline-block;
       background: #ED1C24;
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
       font-style: italic;
-      font-size: clamp(1.4rem, 4vw, 2rem);
-      padding: 0.5rem 1.2rem;
+      font-size: clamp(1.3rem, 4vw, 1.9rem);
+      padding: 0.5rem 1.1rem;
       border-radius: 8px;
       text-decoration: none;
       letter-spacing: -0.04em;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease;
     }
     .logo a:hover {
-      transform: scale(1.05) rotate(-1.5deg);
-      box-shadow: 0 8px 20px rgba(237,28,36,0.5);
+      transform: scale(1.05);
     }
-    .menu-toggle {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.5rem;
-      z-index: 1001;
-      cursor: pointer;
+
+    /* Centered pill nav */
+    .nav-pill {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 50px;
+      padding: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
-    .hamburger {
-      width: 40px;
-      height: 30px;
-      position: relative;
-      display: block;
-    }
-    .hamburger span {
-      display: block;
-      position: absolute;
-      height: 4px;
-      width: 100%;
-      background: white;
-      border-radius: 4px;
-      opacity: 1;
-      left: 0;
-      transform: rotate(0deg);
-      transition: all 0.35s ease-in-out;
-    }
-    .hamburger span:nth-child(1) { top: 0; }
-    .hamburger span:nth-child(2) { top: 13px; }
-    .hamburger span:nth-child(3) { top: 26px; }
-    input#menu-check:checked ~ .hamburger span:nth-child(1) {
-      transform: rotate(135deg);
-      top: 13px;
-    }
-    input#menu-check:checked ~ .hamburger span:nth-child(2) {
-      opacity: 0;
-      left: -60px;
-    }
-    input#menu-check:checked ~ .hamburger span:nth-child(3) {
-      transform: rotate(-135deg);
-      top: 13px;
-    }
-    .dropdown-menu {
-      position: fixed;
-      top: 5rem;
-      right: 1.5rem;
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-      padding: 1rem 0;
-      min-width: 180px;
-      opacity: 0;
-      transform: translateY(-10px);
-      pointer-events: none;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      z-index: 999;
-    }
-    input#menu-check:checked ~ .dropdown-menu {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-    .dropdown-menu a {
-      display: block;
-      padding: 0.9rem 1.5rem;
-      color: white;
+    .nav-pill a {
+      color: #ddd;
       text-decoration: none;
-      font-size: 1.1rem;
-      font-weight: 500;
-      transition: background 0.2s ease;
+      font-weight: 600;
+      padding: 0.7rem 1.3rem;
+      border-radius: 40px;
+      transition: all 0.2s ease;
+      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
     }
-    .dropdown-menu a:hover {
-      background: #222;
-      color: #ED1C24;
+    .nav-pill a:hover,
+    .nav-pill a:focus {
+      background: #ED1C24;
+      color: white;
+      transform: translateY(-1px);
     }
+
     .hero {
       min-height: 100vh;
       display: flex;
@@ -123,9 +87,11 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 7rem 1.5rem 2rem;
+      padding: 8rem 1.5rem 4rem;
     }
     h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 0 0 1rem 0; }
+
+    /* Rest of your existing styles for selector, buttons, footer... */
     .vehicle-selector {
       width: 100%;
       max-width: 900px;
@@ -256,42 +222,37 @@
       opacity: 0.7;
       margin-top: auto;
     }
-    @media (max-width: 600px) {
-      .dropdown-container, .action-buttons { flex-direction: column; align-items: center; }
-      .dropdown-group, .vehicle-btn, .generic-btn { max-width: 100%; flex-basis: auto; }
-      .or-divider { margin: 2.5rem 0; }
-      .logo, .menu-toggle { top: 1rem; }
-      .logo { left: 1rem; }
-      .menu-toggle { right: 1rem; }
-      .logo a { font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 0.4rem 1rem; }
-      .dropdown-menu { right: 1rem; width: 200px; }
-      footer { font-size: 0.85rem; padding: 1.5rem 1rem; }
+    @media (max-width: 700px) {
+      .top-bar { flex-direction: column; gap: 1rem; padding: 1rem; }
+      .nav-pill { flex-wrap: wrap; justify-content: center; padding: 0.4rem; }
+      .nav-pill a { padding: 0.6rem 1rem; font-size: 1rem; }
+      .hero { padding-top: 10rem; }
+    }
+    @media (max-width: 480px) {
+      .nav-pill { flex-direction: column; gap: 0.4rem; border-radius: 20px; }
+      .nav-pill a { border-radius: 30px; }
     }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Peer Auto</a>
-  </div>
-  <div class="menu-toggle">
-    <input type="checkbox" id="menu-check" hidden />
-    <label for="menu-check" class="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-    <div class="dropdown-menu">
-      <a href="#" onclick="alert('Going to Buy page / dashboard'); return false;">I want to buy</a>
-      <a href="#" onclick="alert('Going to Sell dashboard / listings'); return false;">I want to sell</a>
+  <!-- Top bar with logo left + centered pill nav -->
+  <div class="top-bar" id="topBar">
+    <div class="logo">
+      <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Peer Auto</a>
+    </div>
+    <div class="nav-pill">
+      <a href="#" onclick="alert('Going to Buy page / dashboard'); return false;">Buy</a>
+      <a href="#" onclick="alert('Going to Sell dashboard / listings'); return false;">Sell</a>
       <a href="#" onclick="alert('Going to Account / Profile'); return false;">Account</a>
     </div>
   </div>
+
   <main>
     <div class="hero">
       <h1>Zero fees to buy or sell any automotive products</h1>
       <div class="vehicle-selector">
         <h2>What vehicle are you shopping for?</h2>
-       
+        
         <div class="selector-container">
           <div class="dropdown-container">
             <div class="dropdown-group">
@@ -331,9 +292,11 @@
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
+
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script>
     $(document).ready(function() {
+      // Your existing CarQuery script here (unchanged from last working version)
       const currentYear = new Date().getFullYear();
       const minYear = 1900;
       const apiBase = 'https://www.carqueryapi.com/api/0.3/';
@@ -344,7 +307,6 @@
       const makeStatus = $('#make-status');
       const modelStatus = $('#model-status');
 
-      // Populate years (newest first)
       for (let y = currentYear + 1; y >= minYear; y--) {
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
@@ -363,9 +325,7 @@
             makeStatus.text('');
             if (makes.length > 0) {
               makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
-              makes.forEach(make => {
-                makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`);
-              });
+              makes.forEach(make => makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`));
               makeSelect.prop('disabled', false);
             } else {
               makeStatus.text('No makes found for this year');
@@ -392,9 +352,7 @@
             modelStatus.text('');
             if (models.length > 0) {
               models.sort((a, b) => a.model_name.localeCompare(b.model_name));
-              models.forEach(model => {
-                modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`);
-              });
+              models.forEach(model => modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`));
               modelSelect.prop('disabled', false);
             } else {
               modelStatus.text('No models found for this make/year');
@@ -441,6 +399,15 @@
       });
 
       updateSearchButton();
+
+      // Sticky top bar subtle scroll effect
+      $(window).scroll(function() {
+        if ($(this).scrollTop() > 50) {
+          $('#topBar').addClass('scrolled');
+        } else {
+          $('#topBar').removeClass('scrolled');
+        }
+      });
     });
   </script>
 </body>
