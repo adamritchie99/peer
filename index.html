@@ -226,6 +226,17 @@
       min-width: 220px;
       max-width: 320px;
     }
+    .clear-btn {
+      background: #222;
+      border-color: #555;
+      color: #ccc;
+      font-weight: 500;
+    }
+    .clear-btn:hover:not(:disabled) {
+      background: #2a2a2a;
+      border-color: #777;
+      color: white;
+    }
     .generic-btn {
       flex-basis: 66%;
       max-width: 600px;
@@ -310,6 +321,9 @@
             <button class="vehicle-btn" type="button" id="search-vehicle-btn" disabled>
               Search Vehicle Parts
             </button>
+            <button type="button" id="clear-vehicle-btn" class="vehicle-btn clear-btn">
+              Clear / Reset
+            </button>
           </div>
         </div>
         <div class="or-divider">OR</div>
@@ -332,6 +346,7 @@
       const makeSelect = $('#make');
       const modelSelect = $('#model');
       const searchBtn = $('#search-vehicle-btn');
+      const clearBtn = $('#clear-vehicle-btn');
       const makeStatus = $('#make-status');
       const modelStatus = $('#model-status');
 
@@ -340,30 +355,36 @@
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
 
-      // Load ALL makes once on page load (fast, small list)
-      $.getJSON(`${apiBase}GetMakes?format=json`, function(data) {
+      // Load ALL makes once on page load (fast, small list ~150 items)
+      $.getJSON(`${apiBase}GetAllMakes?format=json`, function(data) {
         const makes = data.Results || [];
         if (makes.length > 0) {
           makes.sort((a, b) => a.Make_Name.localeCompare(b.Make_Name));
           makes.forEach(m => {
             makeSelect.append(`<option value="${m.Make_Name}">${m.Make_Name}</option>`);
           });
+        } else {
+          makeStatus.text('No makes available — check connection');
         }
       }).fail(() => {
-        makeStatus.text('Error loading makes — check connection');
+        makeStatus.text('Error loading makes — check your internet');
       });
 
-      // Enable make when year selected (makes are always available)
+      // Enable make dropdown when a year is selected
       yearSelect.on('change', function() {
-        makeSelect.prop('disabled', !$(this).val());
-        modelSelect.prop('disabled', true).val('');
-        modelStatus.text('');
+        const yearVal = $(this).val();
+        makeSelect.prop('disabled', !yearVal);
+        if (!yearVal) {
+          makeSelect.val('');
+          modelSelect.val('').prop('disabled', true);
+          modelStatus.text('');
+        }
         updateSearchButton();
       });
 
-      // Load models when make + year selected
+      // Load models when make AND year are selected
       makeSelect.on('change', loadModels);
-      yearSelect.on('change', loadModels); // in case make already selected
+      yearSelect.on('change', loadModels);
 
       function loadModels() {
         const year = yearSelect.val();
@@ -373,7 +394,6 @@
 
         if (make && year) {
           modelStatus.text('Loading models...');
-          modelSelect.prop('disabled', true);
           $.getJSON(`${apiBase}GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${year}?format=json`, function(data) {
             const models = data.Results || [];
             modelStatus.text('');
@@ -384,11 +404,11 @@
               });
               modelSelect.prop('disabled', false);
             } else {
-              modelStatus.text('No models found for this make/year');
+              modelStatus.text('No models found for this make and year');
             }
             updateSearchButton();
           }).fail(() => {
-            modelStatus.text('Error loading models');
+            modelStatus.text('Error loading models — try again');
             updateSearchButton();
           });
         }
@@ -403,20 +423,33 @@
 
       modelSelect.on('change', updateSearchButton);
 
+      // Search button click
       $('#search-vehicle-btn').on('click', function() {
         const y = yearSelect.val();
         const m = makeSelect.find('option:selected').text();
         const mod = modelSelect.val();
         if (y && m && mod) {
           alert(`Redirecting to vehicle-specific parts for ${y} ${m} ${mod}`);
+          // In real site: window.location = `/parts?year=${y}&make=${encodeURIComponent(m)}&model=${encodeURIComponent(mod)}`;
         }
       });
 
+      // Clear / Reset button
+      $('#clear-vehicle-btn').on('click', function() {
+        yearSelect.val('').trigger('change');
+        makeSelect.val('').prop('disabled', true);
+        modelSelect.val('').prop('disabled', true);
+        makeStatus.text('');
+        modelStatus.text('');
+        updateSearchButton();
+      });
+
+      // Generic button
       $('#generic-btn').on('click', function() {
         alert('Redirecting to generic/universal automotive goods!');
       });
 
-      // Initial button state
+      // Initial state
       updateSearchButton();
     });
   </script>
