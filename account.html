@@ -1,1 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peer Auto - Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      background: #0f0f0f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    main { flex: 1; }
 
+    /* Top bar - slightly tighter */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1.5rem;
+      background: rgba(15,15,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #222;
+      transition: all 0.3s ease;
+    }
+    .top-bar.scrolled {
+      padding: 0.6rem 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .logo a {
+      background: #ED1C24;
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(1.3rem, 4vw, 1.9rem);
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      letter-spacing: -0.04em;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease;
+    }
+    .logo a:hover {
+      transform: scale(1.05);
+    }
+    /* Centered pill nav */
+    .nav-pill {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 50px;
+      padding: 0.4rem;
+      display: flex;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .nav-pill a {
+      color: #ddd;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      transition: all 0.2s ease;
+      font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+    }
+    .nav-pill a:hover,
+    .nav-pill a:focus {
+      background: #ED1C24;
+      color: white;
+      transform: translateY(-1px);
+    }
+    .account-section {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .account-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      margin: 0 0 1.5rem 0;
+    }
+    .dashboard {
+      width: 100%;
+      max-width: 900px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: left;
+    }
+    .dashboard h2 {
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      margin: 0 0 1.5rem 0;
+    }
+    .dashboard p {
+      font-size: 1.1rem;
+      color: #ddd;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+      opacity: 0.7;
+      margin-top: auto;
+    }
+    @media (max-width: 700px) {
+      .top-bar { flex-direction: column; gap: 0.8rem; padding: 0.8rem 1rem; }
+      .nav-pill { flex-wrap: wrap; justify-content: center; padding: 0.3rem; }
+      .nav-pill a { padding: 0.5rem 1rem; font-size: 0.95rem; }
+      .account-section { padding: 5rem 1rem 3rem; min-height: 80vh; }
+    }
+    @media (max-width: 480px) {
+      .nav-pill { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
+      .nav-pill a { border-radius: 30px; padding: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar" id="topBar">
+    <div class="logo">
+      <a href="index.html">Peer Auto</a>
+    </div>
+    <div class="nav-pill">
+      <a href="buy.html">Buy</a> <!-- Placeholder for Buy page -->
+      <a href="sell.html">Sell</a> <!-- Placeholder for Sell page -->
+      <a href="account.html">Account</a>
+    </div>
+  </div>
+  <main>
+    <div class="account-section" id="accountSection">
+      <h1>My Account</h1>
+      <div class="dashboard">
+        <h2>Profile Dashboard</h2>
+        <p>Welcome back! Here you can manage your profile, view purchase history, saved vehicles, and more.</p>
+        <!-- TODO: Add real features like login form, profile edit, listings, etc. -->
+        <p>Placeholder: User info, settings, logout button coming soon.</p>
+      </div>
+    </div>
+  </main>
+  <footer>
+    Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
+  </footer>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script>
+    $(document).ready(function() {
+      // Fade in account section
+      setTimeout(() => {
+        $('#accountSection').addClass('visible');
+      }, 300);
+
+      // Scroll effect on top bar
+      $(window).scroll(function() {
+        if ($(this).scrollTop() > 50) {
+          $('#topBar').addClass('scrolled');
+        } else {
+          $('#topBar').removeClass('scrolled');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
