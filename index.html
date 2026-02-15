@@ -11,21 +11,14 @@
       padding: 0;
       min-height: 100vh;
       font-family: system-ui, sans-serif;
+      background: #0f0f0f;
       color: white;
       display: flex;
       flex-direction: column;
-      /* Background image + dark gradient overlay */
-      background-image: 
-        linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.92)), /* Dark overlay for readability */
-        url('https://images.unsplash.com/photo-1502877338535-766e3a6052c0?auto=format&fit=crop&q=80&w=2000');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed; /* Keeps it subtle and non-distracting on scroll */
-      background-repeat: no-repeat;
     }
-    main { flex: 1; position: relative; z-index: 1; } /* Ensures content is above bg */
+    main { flex: 1; }
 
-    /* Top bar - slightly transparent to blend with bg */
+    /* Top bar - slightly tighter */
     .top-bar {
       position: sticky;
       top: 0;
@@ -63,7 +56,7 @@
 
     /* Centered pill nav */
     .nav-pill {
-      background: rgba(26,26,26,0.85);
+      background: #1a1a1a;
       border: 1px solid #444;
       border-radius: 50px;
       padding: 0.4rem;
@@ -88,13 +81,13 @@
     }
 
     .hero {
-      min-height: 85vh;
+      min-height: 85vh; /* Reduced from 100vh to pull content up */
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: flex-start; /* Align to top instead of center */
       align-items: center;
       text-align: center;
-      padding: 6rem 1.5rem 4rem;
+      padding: 6rem 1.5rem 4rem; /* Reduced top padding significantly */
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 0.8s ease, transform 0.8s ease;
@@ -106,22 +99,149 @@
     h1 {
       font-size: clamp(2.5rem, 8vw, 4.5rem);
       margin: 0 0 1.5rem 0;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.7); /* Helps text pop on bg */
     }
 
-    /* Rest of your styles (vehicle selector, buttons, footer) remain the same */
     .vehicle-selector {
       width: 100%;
       max-width: 900px;
-      margin: -2rem auto 4rem auto;
+      margin: -2rem auto 4rem auto; /* Negative top margin pulls it closer to headline */
       padding: 2rem 1.5rem;
       text-align: center;
-      background: rgba(17,17,17,0.92); /* Slight bg lift for selector readability */
-      border-radius: 16px;
-      border: 1px solid #333;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
     }
-    /* ... (keep all your existing .vehicle-selector h2, .selector-container, dropdowns, buttons, .or-divider, footer, media queries) ... */
+    .vehicle-selector h2 {
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      margin: 0 0 1.8rem 0;
+    }
+    .selector-container {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+    }
+    .dropdown-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
+    }
+    .dropdown-group {
+      flex: 1;
+      min-width: 220px;
+      max-width: 280px;
+      position: relative;
+    }
+    .status-msg {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 0.5rem;
+      min-height: 1.2em;
+    }
+    .or-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2rem 0;
+      color: #777;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #444;
+      margin: 0 1rem;
+    }
+    button, select {
+      width: 100%;
+      padding: 1rem 1.4rem;
+      font-size: 1.15rem;
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    button:hover:not(:disabled), select:hover { background: #222; border-color: #666; }
+    button:focus, select:focus {
+      outline: none;
+      border-color: #888;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.2rem center;
+      background-size: 14px;
+    }
+    .vehicle-btn {
+      flex: 1;
+      min-width: 220px;
+      max-width: 320px;
+    }
+    .clear-btn {
+      background: #222;
+      border-color: #555;
+      color: #ccc;
+      font-weight: 500;
+    }
+    .clear-btn:hover:not(:disabled) {
+      background: #2a2a2a;
+      border-color: #777;
+      color: white;
+    }
+    .generic-btn {
+      flex-basis: 66%;
+      max-width: 600px;
+      min-width: 300px;
+      background: #222;
+      border-color: #555;
+      font-size: 1.25rem;
+      padding: 1.2rem 1.6rem;
+    }
+    .generic-btn:hover {
+      background: #2a2a2a;
+      border-color: #777;
+      box-shadow: 0 0 20px rgba(255,255,255,0.08);
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+      opacity: 0.7;
+      margin-top: auto;
+    }
+    @media (max-width: 700px) {
+      .top-bar { flex-direction: column; gap: 0.8rem; padding: 0.8rem 1rem; }
+      .nav-pill { flex-wrap: wrap; justify-content: center; padding: 0.3rem; }
+      .nav-pill a { padding: 0.5rem 1rem; font-size: 0.95rem; }
+      .hero { padding: 5rem 1rem 3rem; min-height: 80vh; }
+      .vehicle-selector { margin-top: -1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .nav-pill { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
+      .nav-pill a { border-radius: 30px; padding: 0.6rem; }
+    }
   </style>
 </head>
 <body>
@@ -185,12 +305,12 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script>
     $(document).ready(function() {
-      // Fade in hero
+      // Fade in hero for subtle polish
       setTimeout(() => {
         $('#hero').addClass('visible');
       }, 300);
 
-      // Top bar scroll effect
+      // Scroll effect on top bar
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
           $('#topBar').addClass('scrolled');
@@ -199,7 +319,7 @@
         }
       });
 
-      // CarQuery logic (unchanged)
+      // Your CarQuery script (unchanged - should be working now)
       const currentYear = new Date().getFullYear();
       const minYear = 1900;
       const apiBase = 'https://www.carqueryapi.com/api/0.3/';
