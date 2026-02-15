@@ -6,28 +6,19 @@
   <title>Peer Auto</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --brand-red: #ED1C24;
-      --dark-red: #9e1217;
-      --bg-dark: #0f0f0f;
-    }
-
     body, html {
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg-dark);
+      font-family: system-ui, sans-serif;
+      background: #0f0f0f;
       color: white;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(rgba(15, 15, 15, 0.88), rgba(15, 15, 15, 0.94)),
-                  url('https://images.unsplash.com/photo-1617788810580-8e0a3c3b3b2e?auto=format&fit=crop&q=80&w=2000') center/cover no-repeat fixed;
     }
-
     main { flex: 1; }
 
-    /* Top bar */
+    /* Top bar - slightly tighter */
     .top-bar {
       position: sticky;
       top: 0;
@@ -36,314 +27,383 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.8rem 1.5rem;
-      background: rgba(15, 15, 15, 0.92);
+      background: rgba(15,15,15,0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid #222;
       transition: all 0.3s ease;
     }
-
     .top-bar.scrolled {
       padding: 0.6rem 1.5rem;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
-
-    /* FANCY LOGO BUTTON */
     .logo a {
-      position: relative;
-      overflow: hidden;
-      background: var(--brand-red);
+      background: #ED1C24;
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
       font-style: italic;
-      font-size: clamp(1.1rem, 4vw, 1.7rem);
-      padding: 0.5rem 1.2rem;
+      font-size: clamp(1.3rem, 4vw, 1.9rem);
+      padding: 0.45rem 1rem;
       border-radius: 8px;
       text-decoration: none;
       letter-spacing: -0.04em;
-      display: inline-block;
-      transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-      box-shadow: 0 4px 0px var(--dark-red);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease;
     }
-
-    /* The Shimmer Streak */
-    .logo a::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -150%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(
-        to right,
-        transparent,
-        rgba(255, 255, 255, 0.4),
-        transparent
-      );
-      transform: skewX(-25deg);
-    }
-
     .logo a:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(237, 28, 36, 0.3), 0 6px 0px var(--dark-red);
-      background: #ff2a33;
+      transform: scale(1.05);
     }
-
-    /* Trigger shimmer on hover */
-    .logo a:hover::before {
-      left: 150%;
-      transition: all 0.7s ease;
-    }
-
-    .logo a:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0px var(--dark-red);
-    }
-
-    /* Nav Pill */
+    /* Centered pill nav */
     .nav-pill {
       background: #1a1a1a;
       border: 1px solid #444;
       border-radius: 50px;
-      padding: 0.3rem;
+      padding: 0.4rem;
       display: flex;
-      gap: 0.3rem;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
-
     .nav-pill a {
       color: #ddd;
       text-decoration: none;
       font-weight: 600;
-      padding: 0.5rem 1rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 40px;
-      transition: 0.2s;
-      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      font-size: clamp(0.95rem, 2.5vw, 1.05rem);
     }
-
-    .nav-pill a:hover {
-      background: #333;
+    .nav-pill a:hover,
+    .nav-pill a:focus {
+      background: #ED1C24;
       color: white;
+      transform: translateY(-1px);
     }
-
-    /* Hero & Selectors */
     .hero {
-      min-height: 80vh;
+      min-height: 85vh; /* Reduced from 100vh to pull content up */
       display: flex;
       flex-direction: column;
+      justify-content: flex-start; /* Align to top instead of center */
       align-items: center;
       text-align: center;
-      padding: 4rem 1.5rem;
+      padding: 6rem 1.5rem 4rem; /* Reduced top padding significantly */
       opacity: 0;
-      transform: translateY(15px);
+      transform: translateY(20px);
       transition: opacity 0.8s ease, transform 0.8s ease;
     }
-
-    .hero.visible { opacity: 1; transform: translateY(0); }
-
-    h1 { font-size: clamp(2rem, 7vw, 4rem); margin-bottom: 2rem; }
-
-    .selector-container {
-      background: rgba(20, 20, 20, 0.8);
-      border: 1px solid #333;
-      border-radius: 20px;
-      padding: 2rem;
-      max-width: 850px;
-      width: 100%;
-      box-sizing: border-box;
+    .hero.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
-
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      margin: 0 0 1.5rem 0;
+    }
+    .vehicle-selector {
+      width: 100%;
+      max-width: 900px;
+      margin: -2rem auto 4rem auto; /* Negative top margin pulls it closer to headline */
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    .vehicle-selector h2 {
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      margin: 0 0 1.8rem 0;
+    }
+    .selector-container {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+    }
     .dropdown-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
       margin-bottom: 1.5rem;
     }
-
-    .status-msg { font-size: 0.8rem; color: #888; margin-top: 0.4rem; min-height: 1.2em; }
-
-    select, button {
-      width: 100%;
-      padding: 0.9rem;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: 1px solid #444;
-      background: #111;
-      color: white;
-      cursor: pointer;
-      transition: 0.2s;
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      justify-content: center;
     }
-
-    button:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    .search-btn {
-      background: var(--brand-red);
-      border: none;
-      font-weight: 700;
-      flex: 2;
+    .dropdown-group {
+      flex: 1;
+      min-width: 220px;
+      max-width: 280px;
+      position: relative;
     }
-
-    .search-btn:not(:disabled):hover { background: #ff2a33; transform: scale(1.02); }
-
-    .clear-btn { background: #222; flex: 1; color: #ccc; }
-
+    .status-msg {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 0.5rem;
+      min-height: 1.2em;
+    }
     .or-divider {
       display: flex;
       align-items: center;
-      margin: 1.5rem 0;
-      color: #444;
-      font-weight: 800;
+      justify-content: center;
+      margin: 2rem 0;
+      color: #777;
+      font-size: 1.1rem;
+      font-weight: 500;
     }
-    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: #222; margin: 0 1rem; }
-
-    .generic-btn { background: transparent; border: 1px solid #333; width: auto; padding: 0.8rem 2rem; }
-    .generic-btn:hover { background: #1a1a1a; border-color: #555; }
-
-    footer { padding: 2rem; font-size: 0.8rem; color: #444; text-align: center; }
-
-    @media (max-width: 600px) {
-      .top-bar { flex-direction: column; gap: 1rem; }
-      .dropdown-container { grid-template-columns: 1fr; }
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #444;
+      margin: 0 1rem;
+    }
+    button, select {
+      width: 100%;
+      padding: 1rem 1.4rem;
+      font-size: 1.15rem;
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    button:hover:not(:disabled), select:hover { background: #222; border-color: #666; }
+    button:focus, select:focus {
+      outline: none;
+      border-color: #888;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.2rem center;
+      background-size: 14px;
+    }
+    .vehicle-btn {
+      flex: 1;
+      min-width: 220px;
+      max-width: 320px;
+    }
+    .clear-btn {
+      background: #222;
+      border-color: #555;
+      color: #ccc;
+      font-weight: 500;
+    }
+    .clear-btn:hover:not(:disabled) {
+      background: #2a2a2a;
+      border-color: #777;
+      color: white;
+    }
+    .generic-btn {
+      flex-basis: 66%;
+      max-width: 600px;
+      min-width: 300px;
+      background: #222;
+      border-color: #555;
+      font-size: 1.25rem;
+      padding: 1.2rem 1.6rem;
+    }
+    .generic-btn:hover {
+      background: #2a2a2a;
+      border-color: #777;
+      box-shadow: 0 0 20px rgba(255,255,255,0.08);
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+      opacity: 0.7;
+      margin-top: auto;
+    }
+    @media (max-width: 700px) {
+      .top-bar { flex-direction: column; gap: 0.8rem; padding: 0.8rem 1rem; }
+      .nav-pill { flex-wrap: wrap; justify-content: center; padding: 0.3rem; }
+      .nav-pill a { padding: 0.5rem 1rem; font-size: 0.95rem; }
+      .hero { padding: 5rem 1rem 3rem; min-height: 80vh; }
+      .vehicle-selector { margin-top: -1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .nav-pill { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
+      .nav-pill a { border-radius: 30px; padding: 0.6rem; }
     }
   </style>
 </head>
 <body>
-
-  <header class="top-bar" id="topBar">
+  <div class="top-bar" id="topBar">
     <div class="logo">
-      <a href="#" id="logoLink">Peer Auto</a>
+      <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Peer Auto</a>
     </div>
-    <nav class="nav-pill">
-      <a href="#" onclick="alert('Buy Page'); return false;">Buy</a>
-      <a href="#" onclick="alert('Sell Page'); return false;">Sell</a>
-      <a href="#" onclick="alert('Account Page'); return false;">Account</a>
-    </nav>
-  </header>
-
+    <div class="nav-pill">
+      <a href="#" onclick="alert('Going to Buy page / dashboard'); return false;">Buy</a>
+      <a href="#" onclick="alert('Going to Sell dashboard / listings'); return false;">Sell</a>
+      <a href="#" onclick="alert('Going to Account / Profile'); return false;">Account</a>
+    </div>
+  </div>
   <main>
-    <section class="hero" id="hero">
+    <div class="hero" id="hero">
       <h1>Zero fees to buy or sell any automotive products</h1>
-      
-      <div class="selector-container">
-        <h2 style="margin-top:0">Find Your Vehicle</h2>
-        <div class="dropdown-container">
-          <div>
-            <select id="year"><option value="" disabled selected>Year</option></select>
-            <div class="status-msg" id="make-status"></div>
+      <div class="vehicle-selector">
+        <h2>What vehicle are you shopping for?</h2>
+       
+        <div class="selector-container">
+          <div class="dropdown-container">
+            <div class="dropdown-group">
+              <select name="year" id="year" required>
+                <option value="" disabled selected>Select Year</option>
+              </select>
+              <div class="status-msg" id="make-status"></div>
+            </div>
+            <div class="dropdown-group">
+              <select name="make" id="make" required disabled>
+                <option value="" disabled selected>Select Make</option>
+              </select>
+              <div class="status-msg" id="model-status"></div>
+            </div>
+            <div class="dropdown-group">
+              <select name="model" id="model" required disabled>
+                <option value="" disabled selected>Select Model</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <select id="make" disabled><option value="" disabled selected>Make</option></select>
-            <div class="status-msg" id="model-status"></div>
-          </div>
-          <div>
-            <select id="model" disabled><option value="" disabled selected>Model</option></select>
+          <div class="action-buttons">
+            <button class="vehicle-btn" type="button" id="search-vehicle-btn" disabled>
+              Search Vehicle Parts
+            </button>
+            <button type="button" id="clear-vehicle-btn" class="vehicle-btn clear-btn">
+              Clear / Reset
+            </button>
           </div>
         </div>
-
-        <div style="display: flex; gap: 10px;">
-          <button id="search-btn" class="search-btn" disabled>Search Parts</button>
-          <button id="clear-btn" class="clear-btn">Reset</button>
-        </div>
-
         <div class="or-divider">OR</div>
-        <button id="generic-btn" class="generic-btn">Browse Universal Goods</button>
+        <button class="generic-btn" type="button" id="generic-btn">
+          Generic Automotive Goods
+        </button>
       </div>
-    </section>
+    </div>
   </main>
-
   <footer>
-    Designed in Detroit, Michigan.
+    Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
-
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const hero = document.getElementById('hero');
-      const topBar = document.getElementById('topBar');
-      const yearDrop = document.getElementById('year');
-      const makeDrop = document.getElementById('make');
-      const modelDrop = document.getElementById('model');
-      const searchBtn = document.getElementById('search-btn');
-      const clearBtn = document.getElementById('clear-btn');
-      
-      const API_BASE = 'https://www.carqueryapi.com/api/0.3/';
-
-      // Show hero
-      setTimeout(() => hero.classList.add('visible'), 100);
-
-      // Header scroll effect
-      window.addEventListener('scroll', () => {
-        topBar.classList.toggle('scrolled', window.scrollY > 50);
+    $(document).ready(function() {
+      // Fade in hero for subtle polish
+      setTimeout(() => {
+        $('#hero').addClass('visible');
+      }, 300);
+      // Scroll effect on top bar
+      $(window).scroll(function() {
+        if ($(this).scrollTop() > 50) {
+          $('#topBar').addClass('scrolled');
+        } else {
+          $('#topBar').removeClass('scrolled');
+        }
       });
-
-      // Populate Years
+      // Your CarQuery script (unchanged - should be working now)
       const currentYear = new Date().getFullYear();
-      for (let y = currentYear + 1; y >= 1900; y--) {
-        yearDrop.add(new Option(y, y));
+      const minYear = 1900;
+      const apiBase = 'https://www.carqueryapi.com/api/0.3/';
+      const yearSelect = $('#year');
+      const makeSelect = $('#make');
+      const modelSelect = $('#model');
+      const searchBtn = $('#search-vehicle-btn');
+      const makeStatus = $('#make-status');
+      const modelStatus = $('#model-status');
+      for (let y = currentYear + 1; y >= minYear; y--) {
+        yearSelect.append(`<option value="${y}">${y}</option>`);
       }
-
-      // Helper for CarQuery API
-      const getData = async (params) => {
-        const query = new URLSearchParams({ ...params, callback: 'carData' }).toString();
-        return new Promise((resolve) => {
-          window.carData = (data) => resolve(data);
-          const s = document.createElement('script');
-          s.src = `${API_BASE}?${query}`;
-          document.head.appendChild(s);
-          s.remove();
-        });
-      };
-
-      // Year selection -> Load Makes
-      yearDrop.addEventListener('change', async () => {
-        const year = yearDrop.value;
-        reset([makeDrop, modelDrop]);
-        document.getElementById('make-status').textContent = 'Loading...';
-
-        const data = await getData({ cmd: 'getMakes', year, sold_in_us: 1 });
-        document.getElementById('make-status').textContent = '';
-        
-        if (data.Makes) {
-          data.Makes.forEach(m => makeDrop.add(new Option(m.make_display, m.make_id)));
-          makeDrop.disabled = false;
+      yearSelect.on('change', function() {
+        const year = $(this).val();
+        makeSelect.empty().append('<option value="" disabled selected>Select Make</option>').prop('disabled', true);
+        modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
+        makeStatus.text('');
+        modelStatus.text('');
+        if (year) {
+          makeStatus.text('Loading makes...');
+          $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`, function(data) {
+            const makes = data.Makes || [];
+            makeStatus.text('');
+            if (makes.length > 0) {
+              makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+              makes.forEach(make => makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`));
+              makeSelect.prop('disabled', false);
+            } else {
+              makeStatus.text('No makes found for this year');
+            }
+            updateSearchButton();
+          }).fail(() => {
+            makeStatus.text('Error loading makes — try refresh');
+            updateSearchButton();
+          });
+        }
+        updateSearchButton();
+      });
+      makeSelect.on('change', function() {
+        const make = $(this).val();
+        const year = yearSelect.val();
+        modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
+        modelStatus.text('');
+        if (make && year) {
+          modelStatus.text('Loading models...');
+          $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&year=${year}&sold_in_us=1`, function(data) {
+            const models = data.Models || [];
+            modelStatus.text('');
+            if (models.length > 0) {
+              models.sort((a, b) => a.model_name.localeCompare(b.model_name));
+              models.forEach(model => modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`));
+              modelSelect.prop('disabled', false);
+            } else {
+              modelStatus.text('No models found for this make/year');
+            }
+            updateSearchButton();
+          }).fail(() => {
+            modelStatus.text('Error loading models');
+            updateSearchButton();
+          });
         }
       });
-
-      // Make selection -> Load Models
-      makeDrop.addEventListener('change', async () => {
-        const year = yearDrop.value;
-        const make = makeDrop.value;
-        reset([modelDrop]);
-        document.getElementById('model-status').textContent = 'Loading...';
-
-        const data = await getData({ cmd: 'getModels', make, year, sold_in_us: 1 });
-        document.getElementById('model-status').textContent = '';
-
-        if (data.Models) {
-          data.Models.forEach(m => modelDrop.add(new Option(m.model_name, m.model_name)));
-          modelDrop.disabled = false;
+      function updateSearchButton() {
+        const y = yearSelect.val();
+        const m = makeSelect.val();
+        const mod = modelSelect.val();
+        searchBtn.prop('disabled', !(y && m && mod));
+      }
+      modelSelect.on('change', updateSearchButton);
+      $('#search-vehicle-btn').on('click', function() {
+        const y = yearSelect.val();
+        const m = makeSelect.find('option:selected').text();
+        const mod = modelSelect.val();
+        if (y && m && mod) {
+          alert(`Redirecting to vehicle-specific parts for ${y} ${m} ${mod}`);
+        } else {
+          alert('Please select year, make, and model first!');
         }
       });
-
-      // Model selection -> Enable Search
-      modelDrop.addEventListener('change', () => {
-        searchBtn.disabled = !modelDrop.value;
+      $('#clear-vehicle-btn').on('click', function() {
+        yearSelect.val('').trigger('change');
+        makeSelect.val('').prop('disabled', true);
+        modelSelect.val('').prop('disabled', true);
+        makeStatus.text('');
+        modelStatus.text('');
+        updateSearchButton();
       });
-
-      // Reset
-      clearBtn.addEventListener('click', () => {
-        yearDrop.value = '';
-        reset([makeDrop, modelDrop]);
-        searchBtn.disabled = true;
+      $('#generic-btn').on('click', function() {
+        alert('Redirecting to generic/universal automotive goods!');
       });
-
-      function reset(drops) {
-        drops.forEach(d => {
-          d.innerHTML = `<option value="" disabled selected>${d.id.charAt(0).toUpperCase() + d.id.slice(1)}</option>`;
-          d.disabled = true;
-        });
-      }
-
-      searchBtn.onclick = () => alert(`Searching for ${yearDrop.value} ${makeDrop.options[makeDrop.selectedIndex].text} ${modelDrop.value}`);
-      document.getElementById('logoLink').onclick = (e) => { e.preventDefault(); window.scrollTo({top:0, behavior:'smooth'}); };
+      updateSearchButton();
     });
   </script>
 </body>
