@@ -315,41 +315,81 @@
         }
       });
 
+      // Cache object for API responses (year -> makes, year-make -> models)
+      const apiCache = {};
+
       // Reset function (shared by Clear button and Home logo)
-      function resetForm() {
+      function resetForm(scrollToTop = true) {
         $('#year').val('').trigger('change');
         $('#make').val('').prop('disabled', true);
         $('#model').val('').prop('disabled', true);
         $('#make-status').text('');
         $('#model-status').text('');
         updateSearchButton();
+        localStorage.removeItem('vehicleSelection');
+        if (scrollToTop) {
+          window.scrollTo({top: 0, behavior: 'smooth'});
+        }
       }
 
-      // Home logo now resets form + scrolls to top
+      // Home logo resets form + scrolls to top
       $('#home-reset').on('click', function() {
-        window.scrollTo({top: 0, behavior: 'smooth'});
         resetForm();
       });
 
-      // Clear / Reset button uses same reset function
-      $('#clear-vehicle-btn').on('click', resetForm);
+      // Clear / Reset button uses same reset function (no scroll)
+      $('#clear-vehicle-btn').on('click', () => resetForm(false));
 
-      // Your CarQuery script (unchanged)
+      // Nav link handlers (replace alerts with console logs or actual redirects)
+      $('.nav-pill a').on('click', function(e) {
+        e.preventDefault();
+        const text = $(this).text().toLowerCase();
+        console.log(`Navigating to ${text} page/dashboard`);
+        // Example: window.location.href = `/${text}`;
+      });
+
+      // Your CarQuery setup
       const currentYear = new Date().getFullYear();
       const minYear = 1900;
       const apiBase = 'https://www.carqueryapi.com/api/0.3/';
-      const yearSelect = $('#year');
-      const makeSelect = $('#make');
-      const modelSelect = $('#model');
-      const searchBtn = $('#search-vehicle-btn');
+      const yearSelect = $('#year').attr('aria-label', 'Select vehicle year');
+      const makeSelect = $('#make').attr('aria-label', 'Select vehicle make');
+      const modelSelect = $('#model').attr('aria-label', 'Select vehicle model');
+      const searchBtn = $('#search-vehicle-btn').attr('aria-label', 'Search for vehicle-specific parts');
       const makeStatus = $('#make-status');
       const modelStatus = $('#model-status');
 
+      // Populate years
       for (let y = currentYear + 1; y >= minYear; y--) {
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
 
-      yearSelect.on('change', function() {
+      // Debounce function to prevent rapid API calls
+      function debounce(fn, delay) {
+        let timeout;
+        return function(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+
+      // Load saved selection from localStorage
+      function loadSavedSelection() {
+        const saved = JSON.parse(localStorage.getItem('vehicleSelection'));
+        if (saved) {
+          yearSelect.val(saved.year).trigger('change');
+          if (saved.make) {
+            makeSelect.val(saved.make).trigger('change');
+          }
+          if (saved.model) {
+            modelSelect.val(saved.model);
+          }
+          updateSearchButton();
+        }
+      }
+
+      // Year change handler (debounced)
+      const handleYearChange = debounce(function() {
         const year = $(this).val();
         makeSelect.empty().append('<option value="" disabled selected>Select Make</option>').prop('disabled', true);
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
@@ -357,51 +397,96 @@
         modelStatus.text('');
 
         if (year) {
-          makeStatus.text('Loading makes...');
-          $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`, function(data) {
-            const makes = data.Makes || [];
-            makeStatus.text('');
-            if (makes.length > 0) {
-              makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
-              makes.forEach(make => makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`));
-              makeSelect.prop('disabled', false);
-            } else {
-              makeStatus.text('No makes found for this year');
-            }
-            updateSearchButton();
-          }).fail(() => {
-            makeStatus.text('Error loading makes — try refresh');
-            updateSearchButton();
-          });
+          if (apiCache[year]) {
+            populateMakes(apiCache[year]);
+          } else {
+            makeStatus.text('Loading makes...');
+            $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`)
+              .done(function(data) {
+                const makes = data.Makes || [];
+                apiCache[year] = makes;
+                populateMakes(makes);
+              })
+              .fail(() => {
+                makeStatus.text('Error loading makes—check connection or try later');
+                updateSearchButton();
+              });
+          }
         }
         updateSearchButton();
-      });
+        saveSelection();
+      }, 300);
 
-      makeSelect.on('change', function() {
+      function populateMakes(makes) {
+        makeStatus.text('');
+        if (makes.length > 0) {
+          makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+          makes.forEach(make => makeSelect.append(`<option value="${make.make_id}">${make.make_display}</option>`));
+          makeSelect.prop('disabled', false);
+        } else {
+          makeStatus.text('No makes found for this year');
+        }
+        updateSearchButton();
+      }
+
+      yearSelect.on('change', handleYearChange);
+
+      // Make change handler (debounced)
+      const handleMakeChange = debounce(function() {
         const make = $(this).val();
         const year = yearSelect.val();
+        const cacheKey = `${year}-${make}`;
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
         modelStatus.text('');
 
         if (make && year) {
-          modelStatus.text('Loading models...');
-          $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&year=${year}&sold_in_us=1`, function(data) {
-            const models = data.Models || [];
-            modelStatus.text('');
-            if (models.length > 0) {
-              models.sort((a, b) => a.model_name.localeCompare(b.model_name));
-              models.forEach(model => modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`));
-              modelSelect.prop('disabled', false);
-            } else {
-              modelStatus.text('No models found for this make/year');
-            }
-            updateSearchButton();
-          }).fail(() => {
-            modelStatus.text('Error loading models');
-            updateSearchButton();
-          });
+          if (apiCache[cacheKey]) {
+            populateModels(apiCache[cacheKey]);
+          } else {
+            modelStatus.text('Loading models...');
+            $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&year=${year}&sold_in_us=1`)
+              .done(function(data) {
+                const models = data.Models || [];
+                apiCache[cacheKey] = models;
+                populateModels(models);
+              })
+              .fail(() => {
+                modelStatus.text('Error loading models—check connection or try later');
+                updateSearchButton();
+              });
+          }
         }
+        saveSelection();
+      }, 300);
+
+      function populateModels(models) {
+        modelStatus.text('');
+        if (models.length > 0) {
+          models.sort((a, b) => a.model_name.localeCompare(b.model_name));
+          models.forEach(model => modelSelect.append(`<option value="${model.model_name}">${model.model_name}</option>`));
+          modelSelect.prop('disabled', false);
+        } else {
+          modelStatus.text('No models found for this make/year');
+        }
+        updateSearchButton();
+      }
+
+      makeSelect.on('change', handleMakeChange);
+
+      // Model change
+      modelSelect.on('change', function() {
+        updateSearchButton();
+        saveSelection();
       });
+
+      function saveSelection() {
+        const selection = {
+          year: yearSelect.val(),
+          make: makeSelect.val(),
+          model: modelSelect.val()
+        };
+        localStorage.setItem('vehicleSelection', JSON.stringify(selection));
+      }
 
       function updateSearchButton() {
         const y = yearSelect.val();
@@ -410,23 +495,28 @@
         searchBtn.prop('disabled', !(y && m && mod));
       }
 
-      modelSelect.on('change', updateSearchButton);
-
+      // Vehicle search button
       $('#search-vehicle-btn').on('click', function() {
         const y = yearSelect.val();
         const m = makeSelect.find('option:selected').text();
         const mod = modelSelect.val();
         if (y && m && mod) {
-          alert(`Redirecting to vehicle-specific parts for ${y} ${m} ${mod}`);
+          const query = `year=${y}&make=${encodeURIComponent(m)}&model=${encodeURIComponent(mod)}`;
+          console.log(`Redirecting to vehicle-specific parts: /parts?${query}`);
+          // Example: window.location.href = `/parts?${query}`;
         } else {
           alert('Please select year, make, and model first!');
         }
       });
 
+      // Generic button
       $('#generic-btn').on('click', function() {
-        alert('Redirecting to generic/universal automotive goods!');
+        console.log('Redirecting to generic/universal automotive goods: /goods');
+        // Example: window.location.href = '/goods';
       });
 
+      // Load any saved selection on init
+      loadSavedSelection();
       updateSearchButton();
     });
   </script>
