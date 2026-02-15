@@ -146,6 +146,21 @@
     .accordion-icon {
       font-size: 1.2rem;
     }
+    .snapshot {
+      display: flex;
+      justify-content: space-around;
+      margin: 1.5rem 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .snapshot div {
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #444;
+      width: 45%;
+      text-align: center;
+    }
     footer {
       text-align: center;
       padding: 2rem 1rem;
@@ -159,6 +174,8 @@
       .nav-pill { flex-wrap: wrap; justify-content: center; padding: 0.3rem; }
       .nav-pill a { padding: 0.5rem 1rem; font-size: 0.95rem; }
       .account-section { padding: 5rem 1rem 3rem; min-height: 80vh; }
+      .snapshot { flex-direction: column; gap: 1rem; }
+      .snapshot div { width: 100%; }
     }
     @media (max-width: 480px) {
       .nav-pill { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
@@ -172,8 +189,8 @@
       <a href="index.html">Peer Auto</a>
     </div>
     <div class="nav-pill">
-      <a href="buy.html">Buy</a> <!-- Placeholder for Buy page -->
-      <a href="sell.html">Sell</a> <!-- Placeholder for Sell page -->
+      <a href="buy.html">Buy</a>
+      <a href="sell.html">Sell</a>
       <a href="account.html">Account</a>
     </div>
   </div>
@@ -181,10 +198,13 @@
     <div class="account-section" id="accountSection">
       <h1>My Account</h1>
       <div class="dashboard">
-        <h2>Dashboard Overview</h2>
-        <p>Welcome back, Adam!</p>
-        <p>Quick stats: Total spent: $0 | Total earned: $0</p>
-        <p>Messages: 0 unread</p>
+        <h2>Account Overview</h2>
+        <p>Welcome back, Adam! Here's a quick snapshot of your account activity.</p>
+        
+        <div class="snapshot">
+          <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
+          <div>Total Sales: $0 (View details in <a href="sell.html" style="color: #ED1C24;">Sell Dashboard</a>)</div>
+        </div>
 
         <div class="accordion">
           <div class="accordion-header">
@@ -197,37 +217,7 @@
             <p>Payments: Saved methods and payouts.</p>
             <p>Security: Change password, enable 2FA.</p>
             <p>Settings: Notifications, privacy.</p>
-            <!-- Add forms here later -->
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">
-            <span>Things Bought (Buyer Dashboard)</span>
-            <span class="accordion-icon">+</span>
-          </div>
-          <div class="accordion-content">
-            <p>Active Orders: Track shipping/returns.</p>
-            <p>Returns/Disputes: Manage issues.</p>
-            <p>Wishlist: Saved auto parts/vehicles.</p>
-            <p>Purchase History: List of past buys with details/status.</p>
-            <p>Reviews Given: Feedback history.</p>
-            <!-- Add table/list placeholders -->
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">
-            <span>Things Sold (Seller Dashboard)</span>
-            <span class="accordion-icon">+</span>
-          </div>
-          <div class="accordion-content">
-            <p>Orders to Fulfill: Accept/ship new orders.</p>
-            <p>Sales History: Past sales with earnings.</p>
-            <p>Active Listings: Edit/manage inventory.</p>
-            <p>Reviews Received: Buyer feedback.</p>
-            <p>Payouts: Transaction details.</p>
-            <!-- Add table/list placeholders -->
+            <!-- Add forms here later for editing -->
           </div>
         </div>
       </div>
