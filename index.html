@@ -248,9 +248,9 @@
       <a href="#" id="home-reset" onclick="return false;">Peer Auto</a>
     </div>
     <div class="nav-pill">
-      <a href="#" onclick="alert('Going to Buy page / dashboard'); return false;">Buy</a>
-      <a href="#" onclick="alert('Going to Sell dashboard / listings'); return false;">Sell</a>
-      <a href="#" onclick="alert('Going to Account / Profile'); return false;">Account</a>
+      <a href="buy.html">Buy</a> <!-- Placeholder for Buy page -->
+      <a href="sell.html">Sell</a> <!-- Placeholder for Sell page -->
+      <a href="account.html">Account</a>
     </div>
   </div>
   <main>
@@ -339,14 +339,6 @@
 
       // Clear / Reset button uses same reset function (no scroll)
       $('#clear-vehicle-btn').on('click', () => resetForm(false));
-
-      // Nav link handlers (replace alerts with console logs or actual redirects)
-      $('.nav-pill a').on('click', function(e) {
-        e.preventDefault();
-        const text = $(this).text().toLowerCase();
-        console.log(`Navigating to ${text} page/dashboard`);
-        // Example: window.location.href = `/${text}`;
-      });
 
       // Your CarQuery setup
       const currentYear = new Date().getFullYear();
@@ -504,6 +496,7 @@
           const query = `year=${y}&make=${encodeURIComponent(m)}&model=${encodeURIComponent(mod)}`;
           console.log(`Redirecting to vehicle-specific parts: /parts?${query}`);
           // Example: window.location.href = `/parts?${query}`;
+          // TODO: Update to real redirect once search page is built
         } else {
           alert('Please select year, make, and model first!');
         }
@@ -513,6 +506,7 @@
       $('#generic-btn').on('click', function() {
         console.log('Redirecting to generic/universal automotive goods: /goods');
         // Example: window.location.href = '/goods';
+        // TODO: Update to real redirect once goods page is built
       });
 
       // Load any saved selection on init
