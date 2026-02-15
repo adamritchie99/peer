@@ -15,6 +15,14 @@
       color: white;
       display: flex;
       flex-direction: column;
+      /* Background image with dark gradient overlay */
+      background-image: 
+        linear-gradient(rgba(15, 15, 15, 0.88), rgba(15, 15, 15, 0.94)),
+        url('https://images.unsplash.com/photo-1502877338535-766e3a6052c0?auto=format&fit=crop&q=80&w=2000');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
     }
     main { flex: 1; }
 
@@ -53,7 +61,6 @@
     .logo a:hover {
       transform: scale(1.05);
     }
-
     /* Centered pill nav */
     .nav-pill {
       background: #1a1a1a;
@@ -79,7 +86,6 @@
       color: white;
       transform: translateY(-1px);
     }
-
     .hero {
       min-height: 85vh; /* Reduced from 100vh to pull content up */
       display: flex;
@@ -100,7 +106,6 @@
       font-size: clamp(2.5rem, 8vw, 4.5rem);
       margin: 0 0 1.5rem 0;
     }
-
     .vehicle-selector {
       width: 100%;
       max-width: 900px;
@@ -255,13 +260,12 @@
       <a href="#" onclick="alert('Going to Account / Profile'); return false;">Account</a>
     </div>
   </div>
-
   <main>
     <div class="hero" id="hero">
       <h1>Zero fees to buy or sell any automotive products</h1>
       <div class="vehicle-selector">
         <h2>What vehicle are you shopping for?</h2>
-        
+       
         <div class="selector-container">
           <div class="dropdown-container">
             <div class="dropdown-group">
@@ -301,7 +305,6 @@
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
-
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script>
     $(document).ready(function() {
@@ -309,7 +312,6 @@
       setTimeout(() => {
         $('#hero').addClass('visible');
       }, 300);
-
       // Scroll effect on top bar
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
@@ -318,7 +320,6 @@
           $('#topBar').removeClass('scrolled');
         }
       });
-
       // Your CarQuery script (unchanged - should be working now)
       const currentYear = new Date().getFullYear();
       const minYear = 1900;
@@ -329,18 +330,15 @@
       const searchBtn = $('#search-vehicle-btn');
       const makeStatus = $('#make-status');
       const modelStatus = $('#model-status');
-
       for (let y = currentYear + 1; y >= minYear; y--) {
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
-
       yearSelect.on('change', function() {
         const year = $(this).val();
         makeSelect.empty().append('<option value="" disabled selected>Select Make</option>').prop('disabled', true);
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
         makeStatus.text('');
         modelStatus.text('');
-
         if (year) {
           makeStatus.text('Loading makes...');
           $.getJSON(`${apiBase}?callback=?&cmd=getMakes&year=${year}&sold_in_us=1`, function(data) {
@@ -361,13 +359,11 @@
         }
         updateSearchButton();
       });
-
       makeSelect.on('change', function() {
         const make = $(this).val();
         const year = yearSelect.val();
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
         modelStatus.text('');
-
         if (make && year) {
           modelStatus.text('Loading models...');
           $.getJSON(`${apiBase}?callback=?&cmd=getModels&make=${make}&year=${year}&sold_in_us=1`, function(data) {
@@ -387,16 +383,13 @@
           });
         }
       });
-
       function updateSearchButton() {
         const y = yearSelect.val();
         const m = makeSelect.val();
         const mod = modelSelect.val();
         searchBtn.prop('disabled', !(y && m && mod));
       }
-
       modelSelect.on('change', updateSearchButton);
-
       $('#search-vehicle-btn').on('click', function() {
         const y = yearSelect.val();
         const m = makeSelect.find('option:selected').text();
@@ -407,7 +400,6 @@
           alert('Please select year, make, and model first!');
         }
       });
-
       $('#clear-vehicle-btn').on('click', function() {
         yearSelect.val('').trigger('change');
         makeSelect.val('').prop('disabled', true);
@@ -416,11 +408,9 @@
         modelStatus.text('');
         updateSearchButton();
       });
-
       $('#generic-btn').on('click', function() {
         alert('Redirecting to generic/universal automotive goods!');
       });
-
       updateSearchButton();
     });
   </script>
