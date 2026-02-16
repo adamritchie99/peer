@@ -94,9 +94,13 @@
       opacity: 1;
       transform: translateY(0);
     }
+    /* Slogan — now fits cleanly on one line */
     h1 {
-      font-size: clamp(2.5rem, 8vw, 4.5rem);
-      margin: 0 0 1.5rem 0;
+      font-size: clamp(2.15rem, 5.6vw, 3.55rem);
+      line-height: 1.06;
+      margin: 0 0 1.3rem 0;
+      font-weight: 900;
+      letter-spacing: -0.025em;
     }
     .vehicle-selector {
       width: 100%;
@@ -207,13 +211,13 @@
       color: white;
     }
     .generic-btn {
-      flex-basis: 66%;
-      max-width: 600px;
-      min-width: 300px;
+      flex: 1;
+      min-width: 220px;
+      max-width: 320px;
       background: #222;
       border-color: #555;
-      font-size: 1.25rem;
-      padding: 1.2rem 1.6rem;
+      font-size: 1.15rem;
+      padding: 1rem 1.4rem;
     }
     .generic-btn:hover {
       background: #2a2a2a;
@@ -244,12 +248,11 @@
 <body>
   <div class="top-bar" id="topBar">
     <div class="logo">
-      <!-- Updated: now resets fields + scrolls to top -->
       <a href="#" id="home-reset" onclick="return false;">Peer Auto</a>
     </div>
     <div class="nav-pill">
-      <a href="buy.html">Buy</a> <!-- Placeholder for Buy page -->
-      <a href="sell.html">Sell</a> <!-- Placeholder for Sell page -->
+      <a href="buy.html">Buy</a>
+      <a href="sell.html">Sell</a>
       <a href="account.html">Account</a>
     </div>
   </div>
@@ -289,9 +292,11 @@
           </div>
         </div>
         <div class="or-divider">OR</div>
-        <button class="generic-btn" type="button" id="generic-btn">
-          Generic Automotive Goods
-        </button>
+        <div class="action-buttons">
+          <button class="vehicle-btn generic-btn" type="button" id="generic-btn">
+            Generic Automotive Goods
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -495,8 +500,6 @@
         if (y && m && mod) {
           const query = `year=${y}&make=${encodeURIComponent(m)}&model=${encodeURIComponent(mod)}`;
           console.log(`Redirecting to vehicle-specific parts: /parts?${query}`);
-          // Example: window.location.href = `/parts?${query}`;
-          // TODO: Update to real redirect once search page is built
         } else {
           alert('Please select year, make, and model first!');
         }
@@ -505,8 +508,6 @@
       // Generic button
       $('#generic-btn').on('click', function() {
         console.log('Redirecting to generic/universal automotive goods: /goods');
-        // Example: window.location.href = '/goods';
-        // TODO: Update to real redirect once goods page is built
       });
 
       // Load any saved selection on init
