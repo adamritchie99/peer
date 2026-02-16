@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Peer Auto - Sell</title>
+  <title>Peer Auto - Sellers Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
     body, html {
@@ -204,7 +204,7 @@
 
   <main>
     <div class="sell-section" id="sellSection">
-      <h1>Sales Dashboard</h1>
+      <h1>Sellers Dashboard</h1>
       <div class="dashboard">
 
         <!-- Stats -->
@@ -232,15 +232,14 @@
           + Post New Part for Sale
         </button>
 
-        <!-- Sections -->
+        <!-- Sections — Messages first, then Orders to Fulfill, then the rest -->
         <div class="accordion">
           <div class="accordion-header">
-            <span>My Listings</span>
+            <span>Messages</span>
             <span class="accordion-icon">+</span>
           </div>
           <div class="accordion-content">
-            <p>Manage active parts, drafts, and sold items. Quick edit, pause, or delete.</p>
-            <!-- Real table/grid goes here later -->
+            <p>Direct chats with buyers asking about your parts.</p>
           </div>
         </div>
 
@@ -251,6 +250,16 @@
           </div>
           <div class="accordion-content">
             <p>Incoming buyer orders — accept, add tracking, mark shipped.</p>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>My Listings</span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <p>Manage active parts, drafts, and sold items. Quick edit, pause, or delete.</p>
           </div>
         </div>
 
@@ -281,16 +290,6 @@
           </div>
           <div class="accordion-content">
             <p>Buyer feedback — respond and build your reputation.</p>
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">
-            <span>Messages</span>
-            <span class="accordion-icon">+</span>
-          </div>
-          <div class="accordion-content">
-            <p>Direct chats with buyers asking about your parts.</p>
           </div>
         </div>
 
@@ -327,7 +326,7 @@
         icon.text(acc.hasClass('active') ? '-' : '+');
       });
 
-      // Create listing button (for now just alert)
+      // Create listing button
       $('#create-listing-btn').on('click', function() {
         alert('Opening new listing form — vehicle selector will be here soon!');
         // Later: window.location = 'new-listing.html' or modal
