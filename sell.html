@@ -139,25 +139,27 @@
       opacity: 0.9;
     }
 
-    /* Big create button */
+    /* Big centered create button — bigger & cleaner */
     .create-btn {
+      display: block;
       width: 100%;
-      max-width: 420px;
-      margin: 0 auto 2.5rem;
-      padding: 1.4rem 2rem;
-      font-size: 1.35rem;
+      max-width: 520px;
+      margin: 0 auto 2.8rem;
+      padding: 1.6rem 2.8rem;
+      font-size: 1.45rem;
       font-weight: 700;
       background: #ED1C24;
       color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 20px rgba(237, 28, 36, 0.3);
     }
     .create-btn:hover {
       background: #c4171f;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(237, 28, 36, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(237, 28, 36, 0.45);
     }
 
     /* Accordion */
@@ -197,6 +199,7 @@
     @media (max-width: 700px) {
       .stats { flex-direction: column; }
       .stat-card { min-width: 100%; }
+      .create-btn { max-width: 100%; }
     }
   </style>
 </head>
@@ -226,7 +229,7 @@
           <div class="stat-card earnings">
             <h3>$4,920</h3>
             <p>Earned This Month</p>
-            <p class="ytd">YTD: $28,750</p>
+            <p class="ytd">Year to Date: $28,750</p>
           </div>
           <div class="stat-card">
             <h3>8</h3>
@@ -238,7 +241,7 @@
           </div>
         </div>
 
-        <!-- Create New Listing -->
+        <!-- Big centered create button -->
         <button class="create-btn" id="create-listing-btn">
           + Post New Part for Sale
         </button>
