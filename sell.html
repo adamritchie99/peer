@@ -105,10 +105,6 @@
       padding: 2rem;
       text-align: left;
     }
-    .dashboard h2 {
-      font-size: clamp(1.8rem, 5vw, 2.4rem);
-      margin: 0 0 1.5rem 0;
-    }
 
     /* Stats row */
     .stats {
@@ -126,8 +122,22 @@
       padding: 1.2rem;
       text-align: center;
     }
-    .stat-card h3 { font-size: 2.2rem; margin: 0; color: #ED1C24; }
-    .stat-card p { margin: 0.3rem 0 0; font-size: 0.95rem; color: #aaa; }
+    .stat-card h3 { 
+      font-size: 2.2rem; 
+      margin: 0; 
+      color: #ED1C24; 
+    }
+    .stat-card p { 
+      margin: 0.3rem 0 0; 
+      font-size: 0.95rem; 
+      color: #aaa; 
+    }
+    .earnings .ytd {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: #ccc;
+      opacity: 0.9;
+    }
 
     /* Big create button */
     .create-btn {
@@ -210,19 +220,20 @@
         <!-- Stats -->
         <div class="stats">
           <div class="stat-card">
-            <h3>12</h3>
+            <h3>27</h3>
             <p>Active Listings</p>
           </div>
-          <div class="stat-card">
-            <h3>$2,840</h3>
+          <div class="stat-card earnings">
+            <h3>$4,920</h3>
             <p>Earned This Month</p>
+            <p class="ytd">YTD: $28,750</p>
           </div>
           <div class="stat-card">
-            <h3>3</h3>
+            <h3>8</h3>
             <p>Orders to Ship</p>
           </div>
           <div class="stat-card">
-            <h3>7</h3>
+            <h3>14</h3>
             <p>New Messages</p>
           </div>
         </div>
@@ -232,7 +243,7 @@
           + Post New Part for Sale
         </button>
 
-        <!-- Sections — Messages first, then Orders to Fulfill, then the rest -->
+        <!-- Sections -->
         <div class="accordion">
           <div class="accordion-header">
             <span>Messages</span>
@@ -304,12 +315,10 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
     $(document).ready(function() {
-      // Fade in
       setTimeout(() => {
         $('#sellSection').addClass('visible');
       }, 300);
 
-      // Scroll top bar
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
           $('#topBar').addClass('scrolled');
@@ -318,7 +327,6 @@
         }
       });
 
-      // Accordions
       $('.accordion-header').on('click', function() {
         const acc = $(this).parent();
         acc.toggleClass('active');
@@ -326,10 +334,8 @@
         icon.text(acc.hasClass('active') ? '-' : '+');
       });
 
-      // Create listing button
       $('#create-listing-btn').on('click', function() {
         alert('Opening new listing form — vehicle selector will be here soon!');
-        // Later: window.location = 'new-listing.html' or modal
       });
     });
   </script>
