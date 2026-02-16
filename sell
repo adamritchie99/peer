@@ -18,7 +18,7 @@
     }
     main { flex: 1; }
 
-    /* Top bar - slightly tighter */
+    /* Top bar */
     .top-bar {
       position: sticky;
       top: 0;
@@ -50,10 +50,8 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.4);
       transition: transform 0.2s ease;
     }
-    .logo a:hover {
-      transform: scale(1.05);
-    }
-    /* Centered pill nav */
+    .logo a:hover { transform: scale(1.05); }
+
     .nav-pill {
       background: #1a1a1a;
       border: 1px solid #444;
@@ -72,12 +70,12 @@
       transition: all 0.2s ease;
       font-size: clamp(0.95rem, 2.5vw, 1.05rem);
     }
-    .nav-pill a:hover,
-    .nav-pill a:focus {
+    .nav-pill a:hover, .nav-pill a:focus {
       background: #ED1C24;
       color: white;
       transform: translateY(-1px);
     }
+
     .sell-section {
       min-height: 85vh;
       display: flex;
@@ -111,11 +109,48 @@
       font-size: clamp(1.8rem, 5vw, 2.4rem);
       margin: 0 0 1.5rem 0;
     }
-    .dashboard p {
-      font-size: 1.1rem;
-      color: #ddd;
+
+    /* Stats row */
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
     }
-    /* Accordion styles (no changes to overall look) */
+    .stat-card {
+      flex: 1;
+      min-width: 180px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .stat-card h3 { font-size: 2.2rem; margin: 0; color: #ED1C24; }
+    .stat-card p { margin: 0.3rem 0 0; font-size: 0.95rem; color: #aaa; }
+
+    /* Big create button */
+    .create-btn {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto 2.5rem;
+      padding: 1.4rem 2rem;
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: #ED1C24;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .create-btn:hover {
+      background: #c4171f;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(237, 28, 36, 0.4);
+    }
+
+    /* Accordion */
     .accordion {
       background: #1a1a1a;
       border: 1px solid #444;
@@ -130,22 +165,16 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: background 0.2s ease;
     }
-    .accordion-header:hover {
-      background: #222;
-    }
+    .accordion-header:hover { background: #222; }
     .accordion-content {
       padding: 0 1.4rem 1.4rem;
       display: none;
       color: #ccc;
     }
-    .accordion.active .accordion-content {
-      display: block;
-    }
-    .accordion-icon {
-      font-size: 1.2rem;
-    }
+    .accordion.active .accordion-content { display: block; }
+    .accordion-icon { font-size: 1.3rem; }
+
     footer {
       text-align: center;
       padding: 2rem 1rem;
@@ -154,15 +183,10 @@
       opacity: 0.7;
       margin-top: auto;
     }
+
     @media (max-width: 700px) {
-      .top-bar { flex-direction: column; gap: 0.8rem; padding: 0.8rem 1rem; }
-      .nav-pill { flex-wrap: wrap; justify-content: center; padding: 0.3rem; }
-      .nav-pill a { padding: 0.5rem 1rem; font-size: 0.95rem; }
-      .sell-section { padding: 5rem 1rem 3rem; min-height: 80vh; }
-    }
-    @media (max-width: 480px) {
-      .nav-pill { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
-      .nav-pill a { border-radius: 30px; padding: 0.6rem; }
+      .stats { flex-direction: column; }
+      .stat-card { min-width: 100%; }
     }
   </style>
 </head>
@@ -177,37 +201,46 @@
       <a href="account.html">Account</a>
     </div>
   </div>
+
   <main>
     <div class="sell-section" id="sellSection">
       <h1>Sell Dashboard</h1>
       <div class="dashboard">
-        <h2>Seller Overview</h2>
-        <p>Manage your listings, sales, and more here.</p>
-        <!-- Placeholder for messages/recommendations -->
-        <p>Recent activity: None yet. Quick stats: Total earned: $0.</p>
 
-        <div class="accordion">
-          <div class="accordion-header">
-            <span>Sales History</span>
-            <span class="accordion-icon">+</span>
+        <!-- Stats -->
+        <div class="stats">
+          <div class="stat-card">
+            <h3>12</h3>
+            <p>Active Listings</p>
           </div>
-          <div class="accordion-content">
-            <p>List of past sales with buyer details, prices, dates, and statuses.</p>
-            <p>Earnings breakdown.</p>
-            <!-- Add table/list placeholders later -->
+          <div class="stat-card">
+            <h3>$2,840</h3>
+            <p>Earned This Month</p>
+          </div>
+          <div class="stat-card">
+            <h3>3</h3>
+            <p>Orders to Ship</p>
+          </div>
+          <div class="stat-card">
+            <h3>7</h3>
+            <p>New Messages</p>
           </div>
         </div>
 
+        <!-- Create New Listing -->
+        <button class="create-btn" id="create-listing-btn">
+          + Post New Part for Sale
+        </button>
+
+        <!-- Sections -->
         <div class="accordion">
           <div class="accordion-header">
-            <span>Active Listings</span>
+            <span>My Listings</span>
             <span class="accordion-icon">+</span>
           </div>
           <div class="accordion-content">
-            <p>Manage current listings: Edit descriptions, prices, photos.</p>
-            <p>Pause, delete, or add new listings.</p>
-            <p>Inventory levels and low-stock alerts.</p>
-            <!-- Add forms/lists later -->
+            <p>Manage active parts, drafts, and sold items. Quick edit, pause, or delete.</p>
+            <!-- Real table/grid goes here later -->
           </div>
         </div>
 
@@ -217,19 +250,17 @@
             <span class="accordion-icon">+</span>
           </div>
           <div class="accordion-content">
-            <p>Incoming buyer orders: Accept, ship, add tracking.</p>
-            <!-- Add table/list placeholders -->
+            <p>Incoming buyer orders — accept, add tracking, mark shipped.</p>
           </div>
         </div>
 
         <div class="accordion">
           <div class="accordion-header">
-            <span>Reviews & Ratings Received</span>
+            <span>Sales History</span>
             <span class="accordion-icon">+</span>
           </div>
           <div class="accordion-content">
-            <p>Feedback from buyers; respond to reviews.</p>
-            <!-- Add list placeholders -->
+            <p>All completed sales with buyer details and earnings.</p>
           </div>
         </div>
 
@@ -239,26 +270,47 @@
             <span class="accordion-icon">+</span>
           </div>
           <div class="accordion-content">
-            <p>Transaction history, pending payouts.</p>
-            <p>Tax form placeholders (e.g., 1099).</p>
-            <!-- Add table placeholders -->
+            <p>Track what you've earned and when you'll get paid.</p>
           </div>
         </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>Reviews Received</span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <p>Buyer feedback — respond and build your reputation.</p>
+          </div>
+        </div>
+
+        <div class="accordion">
+          <div class="accordion-header">
+            <span>Messages</span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <p>Direct chats with buyers asking about your parts.</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </main>
+
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
     $(document).ready(function() {
-      // Fade in sell section
+      // Fade in
       setTimeout(() => {
         $('#sellSection').addClass('visible');
       }, 300);
 
-      // Scroll effect on top bar
+      // Scroll top bar
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
           $('#topBar').addClass('scrolled');
@@ -267,15 +319,18 @@
         }
       });
 
-      // Accordion functionality (vanilla JS for lightweight)
-      const accordions = document.querySelectorAll('.accordion');
-      accordions.forEach(acc => {
-        const header = acc.querySelector('.accordion-header');
-        header.addEventListener('click', () => {
-          acc.classList.toggle('active');
-          const icon = header.querySelector('.accordion-icon');
-          icon.textContent = acc.classList.contains('active') ? '-' : '+';
-        });
+      // Accordions
+      $('.accordion-header').on('click', function() {
+        const acc = $(this).parent();
+        acc.toggleClass('active');
+        const icon = $(this).find('.accordion-icon');
+        icon.text(acc.hasClass('active') ? '-' : '+');
+      });
+
+      // Create listing button (for now just alert)
+      $('#create-listing-btn').on('click', function() {
+        alert('Opening new listing form — vehicle selector will be here soon!');
+        // Later: window.location = 'new-listing.html' or modal
       });
     });
   </script>
