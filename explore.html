@@ -1,0 +1,263 @@
+<!-- explore.html: Full HTML Structure -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Explore Trends</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Shared CSS -->
+</head>
+<body>
+    <header>
+        <!-- Reuse nav from home -->
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="explore.html">Explore</a>
+            <a href="cart.html">Cart</a>
+        </nav>
+        <h1>Explore Hot Trends & Builds</h1>
+        <p>Get inspired by top-selling parts, trending mods, and what the community is buzzing about.</p>
+    </header>
+
+    <main>
+        <!-- Top Selling Section -->
+        <section class="trend-section">
+            <h2>Top Selling Parts</h2>
+            <div class="trend-grid" id="topSellingGrid">
+                <!-- Dynamic cards -->
+            </div>
+        </section>
+
+        <!-- Hot Now (Trending) Section -->
+        <section class="trend-section">
+            <h2>Hot Now: Rising Stars</h2>
+            <div class="trend-grid" id="hotNowGrid">
+                <!-- Dynamic cards -->
+            </div>
+        </section>
+
+        <!-- Popular Builds/Inspiration Section -->
+        <section class="trend-section">
+            <h2>Community Builds & Inspiration</h2>
+            <div class="inspo-feed" id="inspoFeed">
+                <!-- Instagram-like feed: images with captions -->
+            </div>
+        </section>
+
+        <!-- Filters/Sort for Exploration -->
+        <div class="explore-filters">
+            <select id="sortTrend">
+                <option value="sales">Sort by Sales</option>
+                <option value="views">Sort by Views</option>
+                <option value="new">Newest</option>
+            </select>
+            <select id="vehicleFilter">
+                <option value="">All Vehicles</option>
+                <option value="mustang">Ford Mustang</option>
+                <option value="tesla">Tesla Models</option>
+                <!-- Add more -->
+            </select>
+            <button id="applyExplore">Refresh</button>
+        </div>
+    </main>
+
+    <footer>
+        <!-- Reuse footer -->
+        <p>&copy; 2026 Marketplace</p>
+    </footer>
+
+    <script src="script.js"></script> <!-- JS for populating trends -->
+</body>
+</html>
+
+<!-- styles.css: Additions/Updates (Append these to your existing CSS file) -->
+/* Trend Sections */
+.trend-section {
+    margin: 30px 0;
+}
+
+.trend-section h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.trend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.trend-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.trend-card h3 {
+    font-size: 1.1em;
+    margin: 10px 0 5px;
+}
+
+.trend-card .metric {
+    font-weight: bold;
+    color: #ff4500; /* Orange for emphasis */
+    margin-bottom: 10px;
+}
+
+.trend-card button {
+    padding: 8px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.trend-card button:hover {
+    background: #0056b3;
+}
+
+/* Inspo Feed (Instagram-like) */
+.inspo-feed {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.inspo-card {
+    flex: 1 1 300px; /* Responsive columns */
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.inspo-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.inspo-card .caption {
+    padding: 10px;
+    font-size: 0.9em;
+}
+
+/* Explore Filters */
+.explore-filters {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.explore-filters select, .explore-filters button {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.explore-filters button {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.explore-filters button:hover {
+    background: #218838;
+}
+
+<!-- script.js: Additions/Updates (Append these to your existing JS file) -->
+// Sample trend data (expand with backend)
+const topSelling = [
+    { id: 1, name: 'Turbo Kit for Mustang', price: 499.99, sales: 1200, image: 'turbo.jpg', vehicle: 'mustang', metric: 'Sold 1200+ this month' },
+    { id: 2, name: 'EV Battery Upgrade', price: 299.99, sales: 800, image: 'battery.jpg', vehicle: 'tesla', metric: 'Sold 800+ this month' },
+    // More...
+];
+
+const hotNow = [
+    { id: 3, name: 'Custom Exhaust', price: 199.99, views: 5000, image: 'exhaust.jpg', vehicle: 'mustang', metric: '5K views this week' },
+    // More...
+];
+
+const inspoBuilds = [
+    { id: 4, image: 'build1.jpg', caption: 'User @gearhead built this Mustang with our turbo—trending mod!' },
+    // More...
+];
+
+function renderTrendGrid(gridId, items) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'trend-card';
+        card.innerHTML = `
+            <img src="${item.image}" alt="${item.name}">
+            <h3>${item.name || ''}</h3>
+            ${item.price ? `<p>$${item.price.toFixed(2)}</p>` : ''}
+            <p class="metric">${item.metric}</p>
+            <button onclick="viewDetails(${item.id})">View Details</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function renderInspoFeed() {
+    const feed = document.getElementById('inspoFeed');
+    feed.innerHTML = '';
+    inspoBuilds.forEach(build => {
+        const card = document.createElement('div');
+        card.className = 'inspo-card';
+        card.innerHTML = `
+            <img src="${build.image}" alt="Build Inspiration">
+            <div class="caption">${build.caption}</div>
+        `;
+        feed.appendChild(card);
+    });
+}
+
+// Apply Filters (e.g., sort or vehicle)
+function applyExploreFilters() {
+    const sort = document.getElementById('sortTrend').value;
+    const vehicle = document.getElementById('vehicleFilter').value;
+
+    let filteredTop = topSelling.filter(item => !vehicle || item.vehicle === vehicle);
+    let filteredHot = hotNow.filter(item => !vehicle || item.vehicle === vehicle);
+
+    if (sort === 'sales') {
+        filteredTop.sort((a, b) => b.sales - a.sales);
+        filteredHot.sort((a, b) => b.sales - a.sales); // Assuming hot has sales too
+    } else if (sort === 'views') {
+        filteredTop.sort((a, b) => b.views - a.views);
+        filteredHot.sort((a, b) => b.views - a.views);
+    } else if (sort === 'new') {
+        // Assume timestamp sort
+    }
+
+    renderTrendGrid('topSellingGrid', filteredTop);
+    renderTrendGrid('hotNowGrid', filteredHot);
+    renderInspoFeed(); // Inspo could filter too if tagged
+}
+
+// Event Listener
+document.getElementById('applyExplore').addEventListener('click', applyExploreFilters);
+
+// Initial Render
+renderTrendGrid('topSellingGrid', topSelling);
+renderTrendGrid('hotNowGrid', hotNow);
+renderInspoFeed();
+
+// Placeholder
+function viewDetails(id) {
+    alert(`Viewing details for item ${id}`); // Link to product page
+}
