@@ -103,16 +103,34 @@
       border: 1px solid #333;
       border-radius: 16px;
       padding: 2rem;
+      box-sizing: border-box; /* Ensures padding is included in width */
+    }
+    .auth-form .input-group {
+      position: relative;
+      margin-bottom: 1rem;
     }
     .auth-form input {
       width: 100%;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      background: #1a1a1a;
+      padding: 1rem 2.5rem 1rem 1rem; /* Space for eye icon */
+      background: #1a1a1a; /* Black background */
       color: white;
       border: 1px solid #444;
       border-radius: 12px;
       font-size: 1.15rem;
+      box-sizing: border-box; /* Prevents bleeding */
+    }
+    .auth-form .eye-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #aaa;
+      width: 20px;
+      height: 20px;
+    }
+    .auth-form .eye-icon:hover {
+      color: #fff;
     }
     .auth-form button {
       width: 100%;
@@ -125,6 +143,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
+      box-sizing: border-box;
     }
     .auth-form button:hover {
       background: #c4171f;
@@ -166,8 +185,16 @@
     <div class="auth-section" id="authSection">
       <h1>Login or Sign Up</h1>
       <form class="auth-form" id="authForm">
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
+        <div class="input-group">
+          <input type="email" id="email" placeholder="Email" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" placeholder="Password" required>
+          <svg class="eye-icon" id="togglePassword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 12S4 4 12 4s11 8 11 8-3 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <button type="submit" id="authBtn">Login</button>
         <div class="error-msg" id="errorMsg"></div>
         <div class="auth-toggle" id="toggleAuth">Don't have an account? Sign Up</div>
@@ -252,6 +279,13 @@
         if (user) {
           window.location.href = 'account.html';
         }
+      });
+
+      // Password visibility toggle
+      document.getElementById('togglePassword').addEventListener('click', () => {
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
       });
     });
   </script>
