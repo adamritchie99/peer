@@ -1,1 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peer Auto - Login / Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      background: #0f0f0f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    main { flex: 1; }
 
+    /* Top bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1.5rem;
+      background: rgba(15,15,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #222;
+      transition: all 0.3s ease;
+    }
+    .top-bar.scrolled {
+      padding: 0.6rem 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .logo a {
+      background: #ED1C24;
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: clamp(1.3rem, 4vw, 1.9rem);
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      letter-spacing: -0.04em;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease;
+    }
+    .logo a:hover { transform: scale(1.05); }
+
+    .nav-pill {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 50px;
+      padding: 0.4rem;
+      display: flex;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .nav-pill a {
+      color: #ddd;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      transition: all 0.2s ease;
+      font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+    }
+    .nav-pill a:hover, .nav-pill a:focus {
+      background: #ED1C24;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .auth-section {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .auth-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      margin: 0 0 1.5rem 0;
+    }
+    .auth-form {
+      width: 100%;
+      max-width: 400px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    .auth-form input {
+      width: 100%;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 12px;
+      font-size: 1.15rem;
+    }
+    .auth-form button {
+      width: 100%;
+      padding: 1rem;
+      background: #ED1C24;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .auth-form button:hover {
+      background: #c4171f;
+    }
+    .auth-toggle {
+      margin-top: 1rem;
+      color: #aaa;
+      cursor: pointer;
+    }
+    .error-msg {
+      color: #ff4500;
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #aaa;
+      opacity: 0.7;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar" id="topBar">
+    <div class="logo">
+      <a href="index.html">Peer Auto</a>
+    </div>
+    <div class="nav-pill">
+      <a href="explore.html">Explore</a>
+      <a href="sell.html">Sell</a>
+      <a href="account.html">Account</a>
+    </div>
+  </div>
+
+  <main>
+    <div class="auth-section" id="authSection">
+      <h1>Login or Sign Up</h1>
+      <form class="auth-form" id="authForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" id="authBtn">Login</button>
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="auth-toggle" id="toggleAuth">Don't have an account? Sign Up</div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.getElementById('authSection').classList.add('visible');
+      }, 300);
+
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+          document.getElementById('topBar').classList.add('scrolled');
+        } else {
+          document.getElementById('topBar').classList.remove('scrolled');
+        }
+      });
+
+      const form = document.getElementById('authForm');
+      const btn = document.getElementById('authBtn');
+      const toggle = document.getElementById('toggleAuth');
+      const errorMsg = document.getElementById('errorMsg');
+      let isLogin = true;
+
+      toggle.addEventListener('click', () => {
+        isLogin = !isLogin;
+        btn.textContent = isLogin ? 'Login' : 'Sign Up';
+        toggle.textContent = isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login";
+        errorMsg.textContent = '';
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        errorMsg.textContent = '';
+
+        if (isLogin) {
+          signInWithEmailAndPassword(auth, email, password)
+            .then(() => {
+              window.location.href = 'account.html';
+            })
+            .catch((error) => {
+              errorMsg.textContent = error.message;
+            });
+        } else {
+          createUserWithEmailAndPassword(auth, email, password)
+            .then(() => {
+              window.location.href = 'account.html';
+            })
+            .catch((error) => {
+              errorMsg.textContent = error.message;
+            });
+        }
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          window.location.href = 'account.html';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
