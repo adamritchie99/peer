@@ -250,6 +250,10 @@
         }
       });
 
+      // Auto-clear inputs on load
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+
       const form = document.getElementById('authForm');
       const btn = document.getElementById('authBtn');
       const toggle = document.getElementById('toggleAuth');
