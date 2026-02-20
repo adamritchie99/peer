@@ -187,7 +187,7 @@
     <div class="nav-pill">
       <a href="explore.html">Explore</a>
       <a href="sell.html">Sell</a>
-      <a href="account.html">Account</a>
+      <a href="logout" id="logoutBtn">Logout</a>
     </div>
   </div>
 
@@ -197,7 +197,7 @@
       <div class="dashboard">
 
         <h2>Account Overview</h2>
-        <p>Welcome back, Adam! Here's a quick snapshot of your activity.</p>
+        <p id="welcomeMsg">Welcome back, Adam! Here's a quick snapshot of your activity.</p>
         
         <div class="snapshot">
           <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
@@ -208,8 +208,8 @@
         <div class="details-card">
           <h3>Profile</h3>
           <div class="details-grid">
-            <span>Name</span><span>Adam</span>
-            <span>Email</span><span>adam@peerauto.com</span>
+            <span>Name</span><span id="userName">Adam</span>
+            <span>Email</span><span id="userEmail">adam@peerauto.com</span>
             <span>Phone</span><span>(313) 555-0192</span>
             <span>Location</span><span>Detroit, Michigan</span>
           </div>
@@ -259,7 +259,27 @@
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+    // Your web app's Firebase configuration
+    // TODO: Replace with your actual config from Firebase Console
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
     $(document).ready(function() {
       setTimeout(() => {
         $('#accountSection').addClass('visible');
@@ -271,6 +291,27 @@
         } else {
           $('#topBar').removeClass('scrolled');
         }
+      });
+
+      // Auth state listener
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          document.getElementById('welcomeMsg').textContent = `Welcome back, ${user.displayName || user.email.split('@')[0]}! Here's a quick snapshot of your activity.`;
+          document.getElementById('userEmail').textContent = user.email;
+          // TODO: Fetch and display real name/phone/location if stored in Firestore
+        } else {
+          window.location.href = 'login.html'; // Redirect to login if not authenticated
+        }
+      });
+
+      // Logout
+      document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        signOut(auth).then(() => {
+          window.location.href = 'index.html';
+        }).catch((error) => {
+          console.error('Logout error:', error);
+        });
       });
 
       // Placeholder for edit buttons (you can wire these to modals later)
