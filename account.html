@@ -188,6 +188,7 @@
       <a href="explore.html">Explore</a>
       <a href="sell.html">Sell</a>
       <a href="account.html">Account</a>
+      <a href="#" id="logoutBtn">Logout</a>
     </div>
   </div>
 
@@ -197,7 +198,7 @@
       <div class="dashboard">
 
         <h2>Account Overview</h2>
-        <p>Welcome back, Adam! Here's a quick snapshot of your activity.</p>
+        <p id="welcomeMsg">Welcome back, Adam! Here's a quick snapshot of your activity.</p>
         
         <div class="snapshot">
           <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
@@ -208,8 +209,8 @@
         <div class="details-card">
           <h3>Profile</h3>
           <div class="details-grid">
-            <span>Name</span><span>Adam</span>
-            <span>Email</span><span>adam@peerauto.com</span>
+            <span>Name</span><span id="userName">Adam</span>
+            <span>Email</span><span id="userEmail">adam@peerauto.com</span>
             <span>Phone</span><span>(313) 555-0192</span>
             <span>Location</span><span>Detroit, Michigan</span>
           </div>
@@ -259,7 +260,23 @@
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
+      authDomain: "peer-marketplace-d3f43.firebaseapp.com",
+      projectId: "peer-marketplace-d3f43",
+      storageBucket: "peer-marketplace-d3f43.firebasestorage.app",
+      messagingSenderId: "138891180312",
+      appId: "1:138891180312:web:8ebaaa3dea688da21d066d",
+      measurementId: "G-LG5XX2436Q"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
     $(document).ready(function() {
       setTimeout(() => {
         $('#accountSection').addClass('visible');
@@ -273,7 +290,25 @@
         }
       });
 
-      // Placeholder for edit buttons (you can wire these to modals later)
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          $('#welcomeMsg').text(`Welcome back, ${user.displayName || user.email.split('@')[0]}! Here's a quick snapshot of your activity.`);
+          $('#userEmail').text(user.email);
+          // TODO: Load additional profile data if needed
+        } else {
+          window.location.href = 'login.html';
+        }
+      });
+
+      $('#logoutBtn').on('click', function(e) {
+        e.preventDefault();
+        signOut(auth).then(() => {
+          window.location.href = 'index.html';
+        }).catch((error) => {
+          console.error('Logout error:', error);
+        });
+      });
+
       $('.edit-btn').on('click', function() {
         alert('Edit form opening soon — we’ll make this a nice modal next!');
       });
