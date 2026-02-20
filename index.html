@@ -250,10 +250,10 @@
     <div class="logo">
       <a href="#" id="home-reset" onclick="return false;">Peer Auto</a>
     </div>
-    <div class="nav-pill">
+    <div class="nav-pill" id="navPill">
       <a href="explore.html">Explore</a>
       <a href="sell.html">Sell</a>
-      <a href="account.html">Account</a>
+      <a href="account.html" id="accountLink">Account</a>
     </div>
   </div>
   <main>
@@ -304,7 +304,28 @@
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+    // Your web app's Firebase configuration
+    // TODO: Replace with your actual config from Firebase Console
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Existing script
     $(document).ready(function() {
       // Fade in hero for subtle polish
       setTimeout(() => {
@@ -513,6 +534,27 @@
       // Load any saved selection on init
       loadSavedSelection();
       updateSearchButton();
+
+      // Firebase auth integration
+      onAuthStateChanged(auth, (user) => {
+        const accountLink = document.getElementById('accountLink');
+        if (user) {
+          accountLink.href = 'account.html';
+          accountLink.textContent = 'Account';
+          // Optionally add logout link
+          const logoutLink = document.createElement('a');
+          logoutLink.href = '#';
+          logoutLink.textContent = 'Logout';
+          logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.signOut().then(() => window.location.reload());
+          });
+          document.getElementById('navPill').appendChild(logoutLink);
+        } else {
+          accountLink.href = 'login.html';
+          accountLink.textContent = 'Login';
+        }
+      });
     });
   </script>
 </body>
