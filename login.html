@@ -197,12 +197,12 @@
   <main>
     <div class="auth-section" id="authSection">
       <h1>Login or Sign Up</h1>
-      <form class="auth-form" id="authForm">
+      <form class="auth-form" id="authForm" autocomplete="off">
         <div class="input-group">
-          <input type="email" id="email" placeholder="Email" required>
+          <input type="email" id="email" placeholder="Email" required autocomplete="off">
         </div>
         <div class="input-group">
-          <input type="password" id="password" placeholder="Password" required>
+          <input type="password" id="password" placeholder="Password" required autocomplete="new-password">
           <svg class="eye-icon" id="togglePassword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M1 12S4 4 12 4s11 8 11 8-3 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -250,9 +250,11 @@
         }
       });
 
-      // Auto-clear inputs on load
-      document.getElementById('email').value = '';
-      document.getElementById('password').value = '';
+      // Auto-clear inputs on load (with timeout for autofill override)
+      setTimeout(() => {
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+      }, 100);
 
       const form = document.getElementById('authForm');
       const btn = document.getElementById('authBtn');
