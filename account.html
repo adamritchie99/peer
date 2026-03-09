@@ -298,8 +298,8 @@
           <div class="details-grid">
             <span>Name</span><span id="userName">Adam</span>
             <span>Email</span><span id="userEmail">adam@peerauto.com</span>
-            <span>Phone</span><span id="userPhone">(313) 555-0192</span>
-            <span>Location</span><span id="userLocation">Detroit, Michigan</span>
+            <span>Phone</span><span id="userPhone">Not set</span>
+            <span>Location</span><span id="userLocation">Not set</span>
           </div>
           <button class="edit-btn" id="editProfileBtn" style="margin-top: 1rem;">Edit Profile</button>
         </div>
@@ -349,11 +349,11 @@
         </label>
         <label>
           Phone
-          <input type="tel" id="editPhone" required>
+          <input type="tel" id="editPhone" placeholder="(XXX) XXX-XXXX">
         </label>
         <label>
           Location
-          <input type="text" id="editLocation" required>
+          <input type="text" id="editLocation">
         </label>
         <button type="submit">Save Changes</button>
       </form>
@@ -363,6 +363,7 @@
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
@@ -380,6 +381,18 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+    function cleanPhone(phone) {
+      return phone.replace(/\D/g, '');
+    }
+
+    function formatPhoneNumber(phone) {
+      const cleaned = cleanPhone(phone);
+      if (cleaned.length === 10) {
+        return `(${cleaned.substring(0,3)}) ${cleaned.substring(3,6)}-${cleaned.substring(6)}`;
+      }
+      return phone; // Return original if not 10 digits
+    }
 
     $(document).ready(function() {
       setTimeout(() => {
@@ -403,19 +416,16 @@
           try {
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
+            let rawPhone = 'Not set';
+            let location = 'Not set';
             if (userDoc.exists()) {
               const data = userDoc.data();
-              $('#userPhone').text(data.phone || '(Not set)');
-              $('#userLocation').text(data.location || 'Not set');
-            } else {
-              // Create initial doc if it doesn't exist
-              await setDoc(userDocRef, {
-                phone: '(313) 555-0192', // Default from your code
-                location: 'Detroit, Michigan'
-              });
-              $('#userPhone').text('(313) 555-0192');
-              $('#userLocation').text('Detroit, Michigan');
+              rawPhone = data.phone ? cleanPhone(data.phone) : 'Not set'; // Clean in case stored formatted
+              location = data.location || 'Not set';
             }
+            // No default creation here - stay empty if no doc
+            $('#userPhone').text(rawPhone !== 'Not set' ? formatPhoneNumber(rawPhone) : 'Not set');
+            $('#userLocation').text(location);
           } catch (error) {
             console.error('Error loading profile:', error);
           }
@@ -423,6 +433,9 @@
           window.location.href = 'login.html';
         }
       });
+
+      // Apply mask to phone input
+      $('#editPhone').mask('(000) 000-0000');
 
       // Profile Edit Modal Handling
       const modal = $('#profileModal');
@@ -435,7 +448,8 @@
         if (user) {
           // Pre-fill form with current data
           $('#editName').val($('#userName').text() !== 'Not set' ? $('#userName').text() : '');
-          $('#editPhone').val($('#userPhone').text() !== 'Not set' ? $('#userPhone').text() : '');
+          const currentPhone = $('#userPhone').text();
+          $('#editPhone').val(currentPhone !== 'Not set' ? currentPhone : '');
           $('#editLocation').val($('#userLocation').text() !== 'Not set' ? $('#userLocation').text() : '');
           modal.css('display', 'flex');
         }
@@ -456,8 +470,14 @@
         const user = auth.currentUser;
         if (user) {
           const newName = $('#editName').val().trim();
-          const newPhone = $('#editPhone').val().trim();
+          const newPhoneFormatted = $('#editPhone').val().trim();
+          const newPhone = cleanPhone(newPhoneFormatted);
           const newLocation = $('#editLocation').val().trim();
+
+          if (newPhone && newPhone.length !== 10) {
+            alert('Please enter a valid 10-digit phone number.');
+            return;
+          }
 
           try {
             // Update Auth displayName
@@ -467,14 +487,14 @@
               $('#welcomeMsg').text(`Welcome back, ${newName}! Here's a quick snapshot of your activity.`);
             }
 
-            // Update Firestore
+            // Update Firestore with raw phone (creates doc if needed)
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, {
-              phone: newPhone,
-              location: newLocation
+              phone: newPhone || null, // Store raw or null if empty
+              location: newLocation || null
             }, { merge: true });
 
-            $('#userPhone').text(newPhone || 'Not set');
+            $('#userPhone').text(newPhone ? formatPhoneNumber(newPhone) : 'Not set');
             $('#userLocation').text(newLocation || 'Not set');
 
             modal.css('display', 'none');
