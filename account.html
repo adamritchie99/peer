@@ -229,7 +229,7 @@
       font-size: 1rem;
       color: #ddd;
     }
-    .modal input {
+    .modal input, .modal select {
       background: #111;
       border: 1px solid #333;
       color: white;
@@ -288,8 +288,8 @@
     .modal button.error {
       background: #dc3545; /* Red for error */
     }
-    /* Address list styles */
-    .address-item {
+    /* Address/Payment list styles */
+    .address-item, .payment-item {
       background: #111;
       padding: 1rem;
       border-radius: 8px;
@@ -298,14 +298,14 @@
       justify-content: space-between;
       align-items: center;
     }
-    .address-item .info {
+    .address-item .info, .payment-item .info {
       flex: 1;
     }
-    .address-item .actions {
+    .address-item .actions, .payment-item .actions {
       display: flex;
       gap: 0.5rem;
     }
-    .address-item button {
+    .address-item button, .payment-item button {
       background: #444;
       color: white;
       border: none;
@@ -313,22 +313,22 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .address-item button:hover {
+    .address-item button:hover, .payment-item button:hover {
       background: #666;
     }
-    .address-item button.default {
+    .address-item button.default, .payment-item button.default {
       background: #28a745;
     }
-    .address-item button.default:hover {
+    .address-item button.default:hover, .payment-item button.default:hover {
       background: #218838;
     }
-    .address-item button.delete {
+    .address-item button.delete, .payment-item button.delete {
       background: #dc3545;
     }
-    .address-item button.delete:hover {
+    .address-item button.delete:hover, .payment-item button.delete:hover {
       background: #c82333;
     }
-    #cancelEdit {
+    #cancelEdit, #cancelPaymentEdit {
       background: #444;
       color: white;
       border: none;
@@ -338,7 +338,7 @@
       cursor: pointer;
       margin-top: 0.5rem;
     }
-    #cancelEdit:hover {
+    #cancelEdit:hover, #cancelPaymentEdit:hover {
       background: #666;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -376,7 +376,7 @@
       <div class="dashboard">
         <h2>Account Overview</h2>
         <p id="welcomeMsg">Welcome back, Adam! Here's a quick snapshot of your activity.</p>
-       
+      
         <div class="snapshot">
           <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
           <div>Total Sales: $0 (View details in <a href="sell.html" style="color: #ED1C24;">Sellers Dashboard</a>)</div>
@@ -399,12 +399,12 @@
           </div>
           <button class="edit-btn" id="manageAddressesBtn" style="margin-top: 1rem;">Manage Addresses</button>
         </div>
-        <div class="details-card">
+        <div class="details-card" id="paymentsCard">
           <h3>Payment Methods</h3>
           <div class="details-grid">
-            <span>Visa •••• 4242</span><span>Expires 12/28</span>
+            <span>Primary</span><span id="primaryPayment">Not set</span>
           </div>
-          <button class="edit-btn" style="margin-top: 1rem;">Manage Payments</button>
+          <button class="edit-btn" id="managePaymentsBtn" style="margin-top: 1rem;">Manage Payments</button>
         </div>
         <div class="details-card">
           <h3>Security</h3>
@@ -478,6 +478,45 @@
       </form>
     </div>
   </div>
+  <!-- Payment Manage Modal -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closePaymentModal">&times;</span>
+      <h3>Manage Payment Methods</h3>
+      <div id="paymentList"></div>
+      <hr style="border-color: #444; margin: 1.5rem 0;">
+      <h4 id="paymentFormTitle">Add New Payment Method</h4>
+      <form id="paymentForm">
+        <label>
+          Brand
+          <select id="editBrand">
+            <option>Visa</option>
+            <option>Mastercard</option>
+            <option>American Express</option>
+            <option>Discover</option>
+          </select>
+        </label>
+        <label>
+          Card Number
+          <input type="text" id="editCardNumber" required placeholder="XXXX XXXX XXXX XXXX">
+        </label>
+        <label>
+          Exp Month
+          <input type="text" id="editExpMonth" required placeholder="MM" maxlength="2">
+        </label>
+        <label>
+          Exp Year
+          <input type="text" id="editExpYear" required placeholder="YYYY" maxlength="4">
+        </label>
+        <label>
+          CVV
+          <input type="text" id="editCVV" required maxlength="4" placeholder="XXX">
+        </label>
+        <button type="submit">Add Payment</button>
+        <button type="button" id="cancelPaymentEdit" style="display: none;">Cancel</button>
+      </form>
+    </div>
+  </div>
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
@@ -487,7 +526,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-    
+   
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
       authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -500,14 +539,13 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
     let addresses = [];
+    let payments = [];
     let currentEditingIndex = -1;
-
+    let currentPaymentEditingIndex = -1;
     function cleanPhone(phone) {
       return phone.replace(/\D/g, '');
     }
-
     function formatPhoneNumber(phone) {
       const cleaned = cleanPhone(phone);
       if (cleaned.length === 10) {
@@ -515,28 +553,34 @@
       }
       return phone;
     }
-
     function formatAddress(addr) {
       return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`;
     }
-
-    function ensureDefault() {
-      const hasDefault = addresses.some(a => a.isDefault);
-      if (!hasDefault && addresses.length > 0) {
-        addresses[0].isDefault = true;
+    function formatPayment(pay) {
+      return `${pay.brand} •••• ${pay.last4} Expires ${pay.expMonth.toString().padStart(2, '0')}/${pay.expYear % 100}`;
+    }
+    function ensureDefault(arr, key = 'isDefault') {
+      const hasDefault = arr.some(a => a[key]);
+      if (!hasDefault && arr.length > 0) {
+        arr[0][key] = true;
       }
     }
-
     async function saveAddresses(user) {
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { addresses }, { merge: true });
     }
-
+    async function savePayments(user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { payments }, { merge: true });
+    }
     function renderPrimaryAddress() {
       const primary = addresses.find(a => a.isDefault) || addresses[0] || null;
       $('#primaryAddress').text(primary ? formatAddress(primary) : 'Not set');
     }
-
+    function renderPrimaryPayment() {
+      const primary = payments.find(p => p.isDefault) || payments[0] || null;
+      $('#primaryPayment').text(primary ? formatPayment(primary) : 'Not set');
+    }
     function renderAddressList() {
       $('#addressList').empty();
       addresses.forEach((addr, idx) => {
@@ -566,7 +610,7 @@
         addrDiv.find('.delete-addr').on('click', async () => {
           if (confirm('Delete this address?')) {
             addresses.splice(idx, 1);
-            ensureDefault();
+            ensureDefault(addresses);
             await saveAddresses(auth.currentUser);
             renderAddressList();
             renderPrimaryAddress();
@@ -582,7 +626,52 @@
         $('#addressList').append(addrDiv);
       });
     }
-
+    function renderPaymentList() {
+      $('#paymentList').empty();
+      payments.forEach((pay, idx) => {
+        const isDefault = pay.isDefault;
+        const payDiv = $(`
+          <div class="payment-item">
+            <div class="info">
+              ${formatPayment(pay)} ${isDefault ? '<span style="color: #28a745;">(Default)</span>' : ''}
+            </div>
+            <div class="actions">
+              <button class="edit-pay">Edit</button>
+              <button class="delete-pay">Delete</button>
+              <button class="set-default" ${isDefault ? 'disabled class="default"' : ''}>Set as Default</button>
+            </div>
+          </div>
+        `);
+        payDiv.find('.edit-pay').on('click', () => {
+          currentPaymentEditingIndex = idx;
+          $('#editBrand').val(pay.brand);
+          $('#editCardNumber').val(`•••• •••• •••• ${pay.last4}`);
+          $('#editExpMonth').val(pay.expMonth.toString().padStart(2, '0'));
+          $('#editExpYear').val(pay.expYear);
+          $('#editCVV').val('');
+          $('#paymentFormTitle').text('Edit Payment Method');
+          $('#paymentForm button[type="submit"]').text('Update Payment');
+          $('#cancelPaymentEdit').show();
+        });
+        payDiv.find('.delete-pay').on('click', async () => {
+          if (confirm('Delete this payment method?')) {
+            payments.splice(idx, 1);
+            ensureDefault(payments);
+            await savePayments(auth.currentUser);
+            renderPaymentList();
+            renderPrimaryPayment();
+          }
+        });
+        payDiv.find('.set-default').on('click', async () => {
+          payments.forEach(p => p.isDefault = false);
+          payments[idx].isDefault = true;
+          await savePayments(auth.currentUser);
+          renderPaymentList();
+          renderPrimaryPayment();
+        });
+        $('#paymentList').append(payDiv);
+      });
+    }
     $(document).ready(function() {
       setTimeout(() => {
         $('#accountSection').addClass('visible');
@@ -594,14 +683,12 @@
           $('#topBar').removeClass('scrolled');
         }
       });
-
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           const displayName = user.displayName || user.email.split('@')[0];
           $('#welcomeMsg').text(`Welcome back, ${displayName}! Here's a quick snapshot of your activity.`);
           $('#userEmail').text(user.email);
           $('#userName').text(user.displayName || 'Not set');
-
           try {
             console.log('Loading profile data...');
             const userDocRef = doc(db, 'users', user.uid);
@@ -609,11 +696,13 @@
             let rawPhone = 'Not set';
             let location = 'Not set';
             addresses = [];
+            payments = [];
             if (userDoc.exists()) {
               const data = userDoc.data();
               rawPhone = data.phone || 'Not set';
               location = data.location || 'Not set';
               addresses = data.addresses || [];
+              payments = data.payments || [];
               console.log('Loaded data:', data);
             } else {
               console.log('No profile doc found.');
@@ -621,6 +710,7 @@
             $('#userPhone').text(rawPhone !== 'Not set' ? formatPhoneNumber(rawPhone) : 'Not set');
             $('#userLocation').text(location);
             renderPrimaryAddress();
+            renderPrimaryPayment();
           } catch (error) {
             console.error('Error loading profile:', error.message);
           }
@@ -628,16 +718,17 @@
           window.location.href = 'login.html';
         }
       });
-
-      // Apply mask to phone input
+      // Apply masks
       $('#editPhone').mask('(000) 000-0000');
-
+      $('#editCardNumber').mask('0000 0000 0000 0000');
+      $('#editExpMonth').mask('00');
+      $('#editExpYear').mask('0000');
+      $('#editCVV').mask('0000');
       // Profile Edit Modal Handling
       const profileModal = $('#profileModal');
       const closeProfileBtn = $('#closeProfileModal');
       const profileForm = $('#profileForm');
       const profileSubmitBtn = profileForm.find('button[type="submit"]');
-
       $('#editProfileBtn').on('click', async function() {
         const user = auth.currentUser;
         if (user) {
@@ -649,19 +740,16 @@
           profileModal.css('display', 'flex');
         }
       });
-
       closeProfileBtn.on('click', function() {
         profileModal.css('display', 'none');
         profileSubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
       });
-
       $(window).on('click', function(e) {
         if (e.target === profileModal[0]) {
           profileModal.css('display', 'none');
           profileSubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
         }
       });
-
       profileForm.on('submit', async function(e) {
         e.preventDefault();
         const user = auth.currentUser;
@@ -670,14 +758,11 @@
           const newPhoneFormatted = $('#editPhone').val().trim();
           const newPhone = cleanPhone(newPhoneFormatted);
           const newLocation = $('#editLocation').val().trim();
-
           if (newPhone && newPhone.length !== 10) {
             alert('Please enter a valid 10-digit phone number.');
             return;
           }
-
           profileSubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
-
           try {
             console.log('Starting profile update...');
             // Update Auth displayName
@@ -692,7 +777,6 @@
             } else {
               console.log('No change to displayName.');
             }
-
             // Update Firestore with raw phone
             console.log('Updating Firestore with phone:', newPhone || 'null', 'location:', newLocation || 'null');
             const userDocRef = doc(db, 'users', user.uid);
@@ -701,12 +785,9 @@
               location: newLocation || null
             }, { merge: true });
             console.log('Firestore update complete.');
-
             $('#userPhone').text(newPhone ? formatPhoneNumber(newPhone) : 'Not set');
             $('#userLocation').text(newLocation || 'Not set');
-
             profileSubmitBtn.removeClass('loading').addClass('success').text('Saved');
-
             setTimeout(() => {
               profileModal.css('display', 'none');
               profileSubmitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
@@ -720,14 +801,12 @@
           }
         }
       });
-
       // Address Manage Modal Handling
       const addressModal = $('#addressModal');
       const closeAddressBtn = $('#closeAddressModal');
       const addressForm = $('#addressForm');
       const addressSubmitBtn = addressForm.find('button[type="submit"]');
       const cancelEditBtn = $('#cancelEdit');
-
       $('#manageAddressesBtn').on('click', () => {
         renderAddressList();
         currentEditingIndex = -1;
@@ -737,26 +816,22 @@
         clearAddressForm();
         addressModal.css('display', 'flex');
       });
-
       closeAddressBtn.on('click', () => {
         addressModal.css('display', 'none');
         addressSubmitBtn.removeClass('loading success error').text('Add Address').prop('disabled', false);
       });
-
       $(window).on('click', (e) => {
         if (e.target === addressModal[0]) {
           addressModal.css('display', 'none');
           addressSubmitBtn.removeClass('loading success error').text('Add Address').prop('disabled', false);
         }
       });
-
       function clearAddressForm() {
         $('#editStreet').val('');
         $('#editCity').val('');
         $('#editState').val('');
         $('#editZip').val('');
       }
-
       cancelEditBtn.on('click', () => {
         currentEditingIndex = -1;
         $('#addressFormTitle').text('Add New Address');
@@ -764,7 +839,6 @@
         cancelEditBtn.hide();
         clearAddressForm();
       });
-
       addressForm.on('submit', async (e) => {
         e.preventDefault();
         const user = auth.currentUser;
@@ -773,22 +847,17 @@
           const city = $('#editCity').val().trim();
           const state = $('#editState').val().trim().toUpperCase();
           const zip = $('#editZip').val().trim();
-
           if (!street || !city || !state || !zip) {
             alert('All fields are required.');
             return;
           }
-
           if (!/^\d{5}$/.test(zip)) {
             alert('Please enter a valid 5-digit ZIP code.');
             return;
           }
-
           addressSubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
-
           try {
             const newAddr = { street, city, state, zip, isDefault: false };
-
             if (currentEditingIndex === -1) {
               // Add new
               newAddr.isDefault = addresses.length === 0;
@@ -799,18 +868,14 @@
               addresses[currentEditingIndex] = newAddr;
               newAddr.isDefault = oldDefault; // Preserve default status
             }
-
-            ensureDefault();
+            ensureDefault(addresses);
             await saveAddresses(user);
             renderAddressList();
             renderPrimaryAddress();
-
             addressSubmitBtn.removeClass('loading').addClass('success').text('Saved');
-
             setTimeout(() => {
               addressSubmitBtn.removeClass('success').text(currentEditingIndex === -1 ? 'Add Address' : 'Update Address').prop('disabled', false);
             }, 1500);
-
             // Reset form for next add/update
             currentEditingIndex = -1;
             $('#addressFormTitle').text('Add New Address');
@@ -826,12 +891,119 @@
           }
         }
       });
-
+      // Payment Manage Modal Handling
+      const paymentModal = $('#paymentModal');
+      const closePaymentBtn = $('#closePaymentModal');
+      const paymentForm = $('#paymentForm');
+      const paymentSubmitBtn = paymentForm.find('button[type="submit"]');
+      const cancelPaymentEditBtn = $('#cancelPaymentEdit');
+      $('#managePaymentsBtn').on('click', () => {
+        renderPaymentList();
+        currentPaymentEditingIndex = -1;
+        $('#paymentFormTitle').text('Add New Payment Method');
+        paymentSubmitBtn.text('Add Payment');
+        cancelPaymentEditBtn.hide();
+        clearPaymentForm();
+        paymentModal.css('display', 'flex');
+      });
+      closePaymentBtn.on('click', () => {
+        paymentModal.css('display', 'none');
+        paymentSubmitBtn.removeClass('loading success error').text('Add Payment').prop('disabled', false);
+      });
+      $(window).on('click', (e) => {
+        if (e.target === paymentModal[0]) {
+          paymentModal.css('display', 'none');
+          paymentSubmitBtn.removeClass('loading success error').text('Add Payment').prop('disabled', false);
+        }
+      });
+      function clearPaymentForm() {
+        $('#editBrand').val('Visa');
+        $('#editCardNumber').val('');
+        $('#editExpMonth').val('');
+        $('#editExpYear').val('');
+        $('#editCVV').val('');
+      }
+      cancelPaymentEditBtn.on('click', () => {
+        currentPaymentEditingIndex = -1;
+        $('#paymentFormTitle').text('Add New Payment Method');
+        paymentSubmitBtn.text('Add Payment');
+        cancelPaymentEditBtn.hide();
+        clearPaymentForm();
+      });
+      paymentForm.on('submit', async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (user) {
+          const brand = $('#editBrand').val();
+          let cardNumber = $('#editCardNumber').val().replace(/\D/g, '');
+          const expMonthStr = $('#editExpMonth').val().trim();
+          const expYearStr = $('#editExpYear').val().trim();
+          const cvv = $('#editCVV').val().trim(); // Not stored, just for sim validation
+          if (!brand || !cardNumber || !expMonthStr || !expYearStr || !cvv) {
+            alert('All fields are required.');
+            return;
+          }
+          if (cardNumber.length < 13 || cardNumber.length > 16) {
+            alert('Please enter a valid card number (13-16 digits).');
+            return;
+          }
+          const expMonth = parseInt(expMonthStr);
+          const expYear = parseInt(expYearStr);
+          const currentYear = new Date().getFullYear();
+          const currentMonth = new Date().getMonth() + 1;
+          if (isNaN(expMonth) || expMonth < 1 || expMonth > 12) {
+            alert('Expiration month must be between 01 and 12.');
+            return;
+          }
+          if (isNaN(expYear) || expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+            alert('Expiration date must be in the future.');
+            return;
+          }
+          if (cvv.length < 3 || cvv.length > 4) {
+            alert('CVV must be 3 or 4 digits.');
+            return;
+          }
+          const last4 = cardNumber.slice(-4);
+          paymentSubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
+          try {
+            const newPay = { brand, last4, expMonth, expYear, isDefault: false };
+            if (currentPaymentEditingIndex === -1) {
+              // Add new
+              newPay.isDefault = payments.length === 0;
+              payments.push(newPay);
+            } else {
+              // Update existing
+              const oldDefault = payments[currentPaymentEditingIndex].isDefault;
+              payments[currentPaymentEditingIndex] = newPay;
+              newPay.isDefault = oldDefault;
+            }
+            ensureDefault(payments);
+            await savePayments(user);
+            renderPaymentList();
+            renderPrimaryPayment();
+            paymentSubmitBtn.removeClass('loading').addClass('success').text('Saved');
+            setTimeout(() => {
+              paymentSubmitBtn.removeClass('success').text(currentPaymentEditingIndex === -1 ? 'Add Payment' : 'Update Payment').prop('disabled', false);
+            }, 1500);
+            // Reset form
+            currentPaymentEditingIndex = -1;
+            $('#paymentFormTitle').text('Add New Payment Method');
+            paymentSubmitBtn.text('Add Payment');
+            cancelPaymentEditBtn.hide();
+            clearPaymentForm();
+          } catch (error) {
+            console.error('Error updating payments:', error.message);
+            paymentSubmitBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+            setTimeout(() => {
+              paymentSubmitBtn.removeClass('error').text(currentPaymentEditingIndex === -1 ? 'Add Payment' : 'Update Payment').prop('disabled', false);
+            }, 3000);
+          }
+        }
+      });
       // Placeholder for other edit buttons
-      $('.edit-btn:not(#editProfileBtn):not(#manageAddressesBtn)').on('click', function() {
+      $('.edit-btn:not(#editProfileBtn):not(#manageAddressesBtn):not(#managePaymentsBtn)').on('click', function() {
         alert('Edit form opening soon — we’ll make this a nice modal next!');
       });
-
       $('#logoutBtn').on('click', function(e) {
         e.preventDefault();
         signOut(auth).then(() => {
