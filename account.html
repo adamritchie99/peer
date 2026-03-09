@@ -248,9 +248,45 @@
       cursor: pointer;
       transition: background 0.2s;
       margin-top: 1rem;
+      position: relative;
     }
     .modal button[type="submit"]:hover {
       background: #c4171f;
+    }
+    /* Spinner and success styles */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .modal button.loading {
+      padding-left: 3rem;
+    }
+    .modal button.loading::before {
+      content: '';
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      margin-top: -0.6rem;
+      width: 1.2rem;
+      height: 1.2rem;
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .modal button.success {
+      background: #28a745; /* Green for success */
+    }
+    .modal button.success::before {
+      content: '✓';
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      margin-top: -0.8rem;
+      font-size: 1.4rem;
+    }
+    .modal button.error {
+      background: #dc3545; /* Red for error */
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(50px); } to { transform: translateY(0); } }
@@ -296,7 +332,7 @@
         <div class="details-card" id="profileCard">
           <h3>Profile</h3>
           <div class="details-grid">
-            <span>Name</span><span id="userName">Adam</span>
+            <span>Name</span><span id="userName">Not set</span>
             <span>Email</span><span id="userEmail">adam@peerauto.com</span>
             <span>Phone</span><span id="userPhone">Not set</span>
             <span>Location</span><span id="userLocation">Not set</span>
@@ -408,7 +444,8 @@
 
       onAuthStateChanged(auth, async (user) => {
         if (user) {
-          $('#welcomeMsg').text(`Welcome back, ${user.displayName || user.email.split('@')[0]}! Here's a quick snapshot of your activity.`);
+          const displayName = user.displayName || user.email.split('@')[0];
+          $('#welcomeMsg').text(`Welcome back, ${displayName}! Here's a quick snapshot of your activity.`);
           $('#userEmail').text(user.email);
           $('#userName').text(user.displayName || 'Not set');
 
@@ -420,10 +457,9 @@
             let location = 'Not set';
             if (userDoc.exists()) {
               const data = userDoc.data();
-              rawPhone = data.phone ? cleanPhone(data.phone) : 'Not set'; // Clean in case stored formatted
+              rawPhone = data.phone ? data.phone : 'Not set';
               location = data.location || 'Not set';
             }
-            // No default creation here - stay empty if no doc
             $('#userPhone').text(rawPhone !== 'Not set' ? formatPhoneNumber(rawPhone) : 'Not set');
             $('#userLocation').text(location);
           } catch (error) {
@@ -442,6 +478,7 @@
       const closeBtn = $('#closeProfileModal');
       const editBtn = $('#editProfileBtn');
       const form = $('#profileForm');
+      const submitBtn = form.find('button[type="submit"]');
 
       editBtn.on('click', async function() {
         const user = auth.currentUser;
@@ -457,11 +494,13 @@
 
       closeBtn.on('click', function() {
         modal.css('display', 'none');
+        submitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
       });
 
       $(window).on('click', function(e) {
         if (e.target === modal[0]) {
           modal.css('display', 'none');
+          submitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
         }
       });
 
@@ -479,29 +518,40 @@
             return;
           }
 
+          submitBtn.addClass('loading').text('Saving').prop('disabled', true);
+
           try {
             // Update Auth displayName
-            if (newName && newName !== user.displayName) {
-              await updateProfile(user, { displayName: newName });
-              $('#userName').text(newName);
-              $('#welcomeMsg').text(`Welcome back, ${newName}! Here's a quick snapshot of your activity.`);
+            if (newName !== user.displayName) {
+              await updateProfile(user, { displayName: newName || null });
+              await user.reload(); // Refresh user object
+              const updatedName = user.displayName || user.email.split('@')[0];
+              $('#userName').text(user.displayName || 'Not set');
+              $('#welcomeMsg').text(`Welcome back, ${updatedName}! Here's a quick snapshot of your activity.`);
             }
 
-            // Update Firestore with raw phone (creates doc if needed)
+            // Update Firestore with raw phone
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, {
-              phone: newPhone || null, // Store raw or null if empty
+              phone: newPhone || null,
               location: newLocation || null
             }, { merge: true });
 
             $('#userPhone').text(newPhone ? formatPhoneNumber(newPhone) : 'Not set');
             $('#userLocation').text(newLocation || 'Not set');
 
-            modal.css('display', 'none');
-            alert('Profile updated successfully!');
+            submitBtn.removeClass('loading').addClass('success').text('Saved');
+
+            setTimeout(() => {
+              modal.css('display', 'none');
+              submitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
+            }, 1500);
           } catch (error) {
             console.error('Error updating profile:', error);
-            alert('Failed to update profile. Please try again.');
+            submitBtn.removeClass('loading').addClass('error').text('Failed');
+            setTimeout(() => {
+              submitBtn.removeClass('error').text('Save Changes').prop('disabled', false);
+            }, 2000);
           }
         }
       });
