@@ -588,7 +588,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
    
     const firebaseConfig = {
@@ -1090,6 +1090,18 @@
           if (enrolledFactors.length > 0) {
             unenrollMfaBtn.show();
           } else {
+            if (!user.emailVerified) {
+              alert('Your email must be verified to enable 2FA. Sending verification email...');
+              try {
+                await sendEmailVerification(user);
+                alert('Verification email sent! Check your inbox (and spam) for ' + user.email + ' and click the link to verify.');
+              } catch (error) {
+                console.error('Error sending verification:', error);
+                alert('Failed to send verification: ' + error.message);
+              }
+              // Optionally close modal or hide MFA sections
+              return;
+            }
             unenrollMfaBtn.hide();
             $('#mfaEnrollSection').show();
             const userDoc = await getDoc(doc(db, 'users', user.uid));
