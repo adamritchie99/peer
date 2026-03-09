@@ -451,19 +451,23 @@
 
           // Fetch additional profile data from Firestore
           try {
+            console.log('Loading profile data...');
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             let rawPhone = 'Not set';
             let location = 'Not set';
             if (userDoc.exists()) {
               const data = userDoc.data();
-              rawPhone = data.phone ? data.phone : 'Not set';
+              rawPhone = data.phone || 'Not set';
               location = data.location || 'Not set';
+              console.log('Loaded data:', data);
+            } else {
+              console.log('No profile doc found.');
             }
             $('#userPhone').text(rawPhone !== 'Not set' ? formatPhoneNumber(rawPhone) : 'Not set');
             $('#userLocation').text(location);
           } catch (error) {
-            console.error('Error loading profile:', error);
+            console.error('Error loading profile:', error.message);
           }
         } else {
           window.location.href = 'login.html';
@@ -518,24 +522,31 @@
             return;
           }
 
-          submitBtn.addClass('loading').text('Saving').prop('disabled', true);
+          submitBtn.addClass('loading').text('Saving...').prop('disabled', true);
 
           try {
+            console.log('Starting profile update...');
             // Update Auth displayName
             if (newName !== user.displayName) {
+              console.log('Updating displayName to:', newName || 'null');
               await updateProfile(user, { displayName: newName || null });
               await user.reload(); // Refresh user object
               const updatedName = user.displayName || user.email.split('@')[0];
               $('#userName').text(user.displayName || 'Not set');
               $('#welcomeMsg').text(`Welcome back, ${updatedName}! Here's a quick snapshot of your activity.`);
+              console.log('DisplayName updated to:', user.displayName);
+            } else {
+              console.log('No change to displayName.');
             }
 
             // Update Firestore with raw phone
+            console.log('Updating Firestore with phone:', newPhone || 'null', 'location:', newLocation || 'null');
             const userDocRef = doc(db, 'users', user.uid);
             await setDoc(userDocRef, {
               phone: newPhone || null,
               location: newLocation || null
             }, { merge: true });
+            console.log('Firestore update complete.');
 
             $('#userPhone').text(newPhone ? formatPhoneNumber(newPhone) : 'Not set');
             $('#userLocation').text(newLocation || 'Not set');
@@ -547,11 +558,11 @@
               submitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
             }, 1500);
           } catch (error) {
-            console.error('Error updating profile:', error);
-            submitBtn.removeClass('loading').addClass('error').text('Failed');
+            console.error('Error updating profile:', error.message);
+            submitBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
             setTimeout(() => {
               submitBtn.removeClass('error').text('Save Changes').prop('disabled', false);
-            }, 2000);
+            }, 3000);
           }
         }
       });
