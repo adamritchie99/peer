@@ -288,6 +288,59 @@
     .modal button.error {
       background: #dc3545; /* Red for error */
     }
+    /* Address list styles */
+    .address-item {
+      background: #111;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .address-item .info {
+      flex: 1;
+    }
+    .address-item .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .address-item button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .address-item button:hover {
+      background: #666;
+    }
+    .address-item button.default {
+      background: #28a745;
+    }
+    .address-item button.default:hover {
+      background: #218838;
+    }
+    .address-item button.delete {
+      background: #dc3545;
+    }
+    .address-item button.delete:hover {
+      background: #c82333;
+    }
+    #cancelEdit {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    #cancelEdit:hover {
+      background: #666;
+    }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(50px); } to { transform: translateY(0); } }
     footer {
@@ -339,12 +392,12 @@
           </div>
           <button class="edit-btn" id="editProfileBtn" style="margin-top: 1rem;">Edit Profile</button>
         </div>
-        <div class="details-card">
+        <div class="details-card" id="shippingCard">
           <h3>Shipping Addresses</h3>
           <div class="details-grid">
-            <span>Primary</span><span>123 Woodward Ave, Detroit, MI 48226</span>
+            <span>Primary</span><span id="primaryAddress">Not set</span>
           </div>
-          <button class="edit-btn" style="margin-top: 1rem;">Manage Addresses</button>
+          <button class="edit-btn" id="manageAddressesBtn" style="margin-top: 1rem;">Manage Addresses</button>
         </div>
         <div class="details-card">
           <h3>Payment Methods</h3>
@@ -373,7 +426,7 @@
       </div>
     </div>
   </main>
-  <!-- New Profile Edit Modal -->
+  <!-- Profile Edit Modal -->
   <div id="profileModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="closeProfileModal">&times;</span>
@@ -392,6 +445,36 @@
           <input type="text" id="editLocation">
         </label>
         <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <!-- Address Manage Modal -->
+  <div id="addressModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeAddressModal">&times;</span>
+      <h3>Manage Shipping Addresses</h3>
+      <div id="addressList"></div>
+      <hr style="border-color: #444; margin: 1.5rem 0;">
+      <h4 id="addressFormTitle">Add New Address</h4>
+      <form id="addressForm">
+        <label>
+          Street
+          <input type="text" id="editStreet" required>
+        </label>
+        <label>
+          City
+          <input type="text" id="editCity" required>
+        </label>
+        <label>
+          State
+          <input type="text" id="editState" required maxlength="2" placeholder="MI">
+        </label>
+        <label>
+          ZIP Code
+          <input type="text" id="editZip" required pattern="\d{5}">
+        </label>
+        <button type="submit">Add Address</button>
+        <button type="button" id="cancelEdit" style="display: none;">Cancel</button>
       </form>
     </div>
   </div>
@@ -418,6 +501,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    let addresses = [];
+    let currentEditingIndex = -1;
+
     function cleanPhone(phone) {
       return phone.replace(/\D/g, '');
     }
@@ -427,7 +513,74 @@
       if (cleaned.length === 10) {
         return `(${cleaned.substring(0,3)}) ${cleaned.substring(3,6)}-${cleaned.substring(6)}`;
       }
-      return phone; // Return original if not 10 digits
+      return phone;
+    }
+
+    function formatAddress(addr) {
+      return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`;
+    }
+
+    function ensureDefault() {
+      const hasDefault = addresses.some(a => a.isDefault);
+      if (!hasDefault && addresses.length > 0) {
+        addresses[0].isDefault = true;
+      }
+    }
+
+    async function saveAddresses(user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { addresses }, { merge: true });
+    }
+
+    function renderPrimaryAddress() {
+      const primary = addresses.find(a => a.isDefault) || addresses[0] || null;
+      $('#primaryAddress').text(primary ? formatAddress(primary) : 'Not set');
+    }
+
+    function renderAddressList() {
+      $('#addressList').empty();
+      addresses.forEach((addr, idx) => {
+        const isDefault = addr.isDefault;
+        const addrDiv = $(`
+          <div class="address-item">
+            <div class="info">
+              ${formatAddress(addr)} ${isDefault ? '<span style="color: #28a745;">(Default)</span>' : ''}
+            </div>
+            <div class="actions">
+              <button class="edit-addr">Edit</button>
+              <button class="delete-addr">Delete</button>
+              <button class="set-default" ${isDefault ? 'disabled class="default"' : ''}>Set as Default</button>
+            </div>
+          </div>
+        `);
+        addrDiv.find('.edit-addr').on('click', () => {
+          currentEditingIndex = idx;
+          $('#editStreet').val(addr.street);
+          $('#editCity').val(addr.city);
+          $('#editState').val(addr.state);
+          $('#editZip').val(addr.zip);
+          $('#addressFormTitle').text('Edit Address');
+          $('#addressForm button[type="submit"]').text('Update Address');
+          $('#cancelEdit').show();
+        });
+        addrDiv.find('.delete-addr').on('click', async () => {
+          if (confirm('Delete this address?')) {
+            addresses.splice(idx, 1);
+            ensureDefault();
+            await saveAddresses(auth.currentUser);
+            renderAddressList();
+            renderPrimaryAddress();
+          }
+        });
+        addrDiv.find('.set-default').on('click', async () => {
+          addresses.forEach(a => a.isDefault = false);
+          addresses[idx].isDefault = true;
+          await saveAddresses(auth.currentUser);
+          renderAddressList();
+          renderPrimaryAddress();
+        });
+        $('#addressList').append(addrDiv);
+      });
     }
 
     $(document).ready(function() {
@@ -449,23 +602,25 @@
           $('#userEmail').text(user.email);
           $('#userName').text(user.displayName || 'Not set');
 
-          // Fetch additional profile data from Firestore
           try {
             console.log('Loading profile data...');
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
             let rawPhone = 'Not set';
             let location = 'Not set';
+            addresses = [];
             if (userDoc.exists()) {
               const data = userDoc.data();
               rawPhone = data.phone || 'Not set';
               location = data.location || 'Not set';
+              addresses = data.addresses || [];
               console.log('Loaded data:', data);
             } else {
               console.log('No profile doc found.');
             }
             $('#userPhone').text(rawPhone !== 'Not set' ? formatPhoneNumber(rawPhone) : 'Not set');
             $('#userLocation').text(location);
+            renderPrimaryAddress();
           } catch (error) {
             console.error('Error loading profile:', error.message);
           }
@@ -478,13 +633,12 @@
       $('#editPhone').mask('(000) 000-0000');
 
       // Profile Edit Modal Handling
-      const modal = $('#profileModal');
-      const closeBtn = $('#closeProfileModal');
-      const editBtn = $('#editProfileBtn');
-      const form = $('#profileForm');
-      const submitBtn = form.find('button[type="submit"]');
+      const profileModal = $('#profileModal');
+      const closeProfileBtn = $('#closeProfileModal');
+      const profileForm = $('#profileForm');
+      const profileSubmitBtn = profileForm.find('button[type="submit"]');
 
-      editBtn.on('click', async function() {
+      $('#editProfileBtn').on('click', async function() {
         const user = auth.currentUser;
         if (user) {
           // Pre-fill form with current data
@@ -492,23 +646,23 @@
           const currentPhone = $('#userPhone').text();
           $('#editPhone').val(currentPhone !== 'Not set' ? currentPhone : '');
           $('#editLocation').val($('#userLocation').text() !== 'Not set' ? $('#userLocation').text() : '');
-          modal.css('display', 'flex');
+          profileModal.css('display', 'flex');
         }
       });
 
-      closeBtn.on('click', function() {
-        modal.css('display', 'none');
-        submitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
+      closeProfileBtn.on('click', function() {
+        profileModal.css('display', 'none');
+        profileSubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
       });
 
       $(window).on('click', function(e) {
-        if (e.target === modal[0]) {
-          modal.css('display', 'none');
-          submitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
+        if (e.target === profileModal[0]) {
+          profileModal.css('display', 'none');
+          profileSubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
         }
       });
 
-      form.on('submit', async function(e) {
+      profileForm.on('submit', async function(e) {
         e.preventDefault();
         const user = auth.currentUser;
         if (user) {
@@ -522,7 +676,7 @@
             return;
           }
 
-          submitBtn.addClass('loading').text('Saving...').prop('disabled', true);
+          profileSubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
 
           try {
             console.log('Starting profile update...');
@@ -551,24 +705,130 @@
             $('#userPhone').text(newPhone ? formatPhoneNumber(newPhone) : 'Not set');
             $('#userLocation').text(newLocation || 'Not set');
 
-            submitBtn.removeClass('loading').addClass('success').text('Saved');
+            profileSubmitBtn.removeClass('loading').addClass('success').text('Saved');
 
             setTimeout(() => {
-              modal.css('display', 'none');
-              submitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
+              profileModal.css('display', 'none');
+              profileSubmitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
             }, 1500);
           } catch (error) {
             console.error('Error updating profile:', error.message);
-            submitBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+            profileSubmitBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
             setTimeout(() => {
-              submitBtn.removeClass('error').text('Save Changes').prop('disabled', false);
+              profileSubmitBtn.removeClass('error').text('Save Changes').prop('disabled', false);
+            }, 3000);
+          }
+        }
+      });
+
+      // Address Manage Modal Handling
+      const addressModal = $('#addressModal');
+      const closeAddressBtn = $('#closeAddressModal');
+      const addressForm = $('#addressForm');
+      const addressSubmitBtn = addressForm.find('button[type="submit"]');
+      const cancelEditBtn = $('#cancelEdit');
+
+      $('#manageAddressesBtn').on('click', () => {
+        renderAddressList();
+        currentEditingIndex = -1;
+        $('#addressFormTitle').text('Add New Address');
+        addressSubmitBtn.text('Add Address');
+        cancelEditBtn.hide();
+        clearAddressForm();
+        addressModal.css('display', 'flex');
+      });
+
+      closeAddressBtn.on('click', () => {
+        addressModal.css('display', 'none');
+        addressSubmitBtn.removeClass('loading success error').text('Add Address').prop('disabled', false);
+      });
+
+      $(window).on('click', (e) => {
+        if (e.target === addressModal[0]) {
+          addressModal.css('display', 'none');
+          addressSubmitBtn.removeClass('loading success error').text('Add Address').prop('disabled', false);
+        }
+      });
+
+      function clearAddressForm() {
+        $('#editStreet').val('');
+        $('#editCity').val('');
+        $('#editState').val('');
+        $('#editZip').val('');
+      }
+
+      cancelEditBtn.on('click', () => {
+        currentEditingIndex = -1;
+        $('#addressFormTitle').text('Add New Address');
+        addressSubmitBtn.text('Add Address');
+        cancelEditBtn.hide();
+        clearAddressForm();
+      });
+
+      addressForm.on('submit', async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (user) {
+          const street = $('#editStreet').val().trim();
+          const city = $('#editCity').val().trim();
+          const state = $('#editState').val().trim().toUpperCase();
+          const zip = $('#editZip').val().trim();
+
+          if (!street || !city || !state || !zip) {
+            alert('All fields are required.');
+            return;
+          }
+
+          if (!/^\d{5}$/.test(zip)) {
+            alert('Please enter a valid 5-digit ZIP code.');
+            return;
+          }
+
+          addressSubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
+
+          try {
+            const newAddr = { street, city, state, zip, isDefault: false };
+
+            if (currentEditingIndex === -1) {
+              // Add new
+              newAddr.isDefault = addresses.length === 0;
+              addresses.push(newAddr);
+            } else {
+              // Update existing
+              const oldDefault = addresses[currentEditingIndex].isDefault;
+              addresses[currentEditingIndex] = newAddr;
+              newAddr.isDefault = oldDefault; // Preserve default status
+            }
+
+            ensureDefault();
+            await saveAddresses(user);
+            renderAddressList();
+            renderPrimaryAddress();
+
+            addressSubmitBtn.removeClass('loading').addClass('success').text('Saved');
+
+            setTimeout(() => {
+              addressSubmitBtn.removeClass('success').text(currentEditingIndex === -1 ? 'Add Address' : 'Update Address').prop('disabled', false);
+            }, 1500);
+
+            // Reset form for next add/update
+            currentEditingIndex = -1;
+            $('#addressFormTitle').text('Add New Address');
+            addressSubmitBtn.text('Add Address');
+            cancelEditBtn.hide();
+            clearAddressForm();
+          } catch (error) {
+            console.error('Error updating addresses:', error.message);
+            addressSubmitBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+            setTimeout(() => {
+              addressSubmitBtn.removeClass('error').text(currentEditingIndex === -1 ? 'Add Address' : 'Update Address').prop('disabled', false);
             }, 3000);
           }
         }
       });
 
       // Placeholder for other edit buttons
-      $('.edit-btn:not(#editProfileBtn)').on('click', function() {
+      $('.edit-btn:not(#editProfileBtn):not(#manageAddressesBtn)').on('click', function() {
         alert('Edit form opening soon — we’ll make this a nice modal next!');
       });
 
