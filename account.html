@@ -17,7 +17,6 @@
       flex-direction: column;
     }
     main { flex: 1; }
-
     /* Top bar */
     .top-bar {
       position: sticky;
@@ -51,7 +50,6 @@
       transition: transform 0.2s ease;
     }
     .logo a:hover { transform: scale(1.05); }
-
     .nav-pill {
       background: #1a1a1a;
       border: 1px solid #444;
@@ -75,7 +73,6 @@
       color: white;
       transform: translateY(-1px);
     }
-
     .account-section {
       min-height: 85vh;
       display: flex;
@@ -105,7 +102,6 @@
       padding: 2rem;
       text-align: left;
     }
-
     /* Snapshot boxes */
     .snapshot {
       display: flex;
@@ -125,7 +121,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     /* Open details cards */
     .details-card {
       background: #1a1a1a;
@@ -184,7 +179,81 @@
       transform: translateY(-3px);
       box-shadow: 0 12px 35px rgba(237, 28, 36, 0.45);
     }
-
+    /* New modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      animation: slideUp 0.3s ease;
+    }
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      color: #aaa;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .close-btn:hover { color: #ED1C24; }
+    .modal h3 {
+      color: #ED1C24;
+      margin-bottom: 1.5rem;
+    }
+    .modal form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .modal label {
+      display: flex;
+      flex-direction: column;
+      font-size: 1rem;
+      color: #ddd;
+    }
+    .modal input {
+      background: #111;
+      border: 1px solid #333;
+      color: white;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-top: 0.4rem;
+    }
+    .modal button[type="submit"] {
+      background: #ED1C24;
+      color: white;
+      border: none;
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 1rem;
+    }
+    .modal button[type="submit"]:hover {
+      background: #c4171f;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(50px); } to { transform: translateY(0); } }
     footer {
       text-align: center;
       padding: 2rem 1rem;
@@ -193,7 +262,6 @@
       opacity: 0.7;
       margin-top: auto;
     }
-
     @media (max-width: 700px) {
       .snapshot { flex-direction: column; gap: 1rem; }
       .snapshot div { width: 100%; }
@@ -213,32 +281,28 @@
       <a href="account.html">Account</a>
     </div>
   </div>
-
   <main>
     <div class="account-section" id="accountSection">
       <h1>My Account</h1>
       <div class="dashboard">
-
         <h2>Account Overview</h2>
         <p id="welcomeMsg">Welcome back, Adam! Here's a quick snapshot of your activity.</p>
-        
+       
         <div class="snapshot">
           <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
           <div>Total Sales: $0 (View details in <a href="sell.html" style="color: #ED1C24;">Sellers Dashboard</a>)</div>
         </div>
-
         <!-- Fully open General Account Details -->
-        <div class="details-card">
+        <div class="details-card" id="profileCard">
           <h3>Profile</h3>
           <div class="details-grid">
             <span>Name</span><span id="userName">Adam</span>
             <span>Email</span><span id="userEmail">adam@peerauto.com</span>
-            <span>Phone</span><span>(313) 555-0192</span>
-            <span>Location</span><span>Detroit, Michigan</span>
+            <span>Phone</span><span id="userPhone">(313) 555-0192</span>
+            <span>Location</span><span id="userLocation">Detroit, Michigan</span>
           </div>
-          <button class="edit-btn" style="margin-top: 1rem;">Edit Profile</button>
+          <button class="edit-btn" id="editProfileBtn" style="margin-top: 1rem;">Edit Profile</button>
         </div>
-
         <div class="details-card">
           <h3>Shipping Addresses</h3>
           <div class="details-grid">
@@ -246,7 +310,6 @@
           </div>
           <button class="edit-btn" style="margin-top: 1rem;">Manage Addresses</button>
         </div>
-
         <div class="details-card">
           <h3>Payment Methods</h3>
           <div class="details-grid">
@@ -254,7 +317,6 @@
           </div>
           <button class="edit-btn" style="margin-top: 1rem;">Manage Payments</button>
         </div>
-
         <div class="details-card">
           <h3>Security</h3>
           <div class="details-grid">
@@ -263,7 +325,6 @@
           </div>
           <button class="edit-btn" style="margin-top: 1rem;">Update Security</button>
         </div>
-
         <div class="details-card">
           <h3>Preferences</h3>
           <div class="details-grid">
@@ -272,22 +333,41 @@
           </div>
           <button class="edit-btn" style="margin-top: 1rem;">Edit Preferences</button>
         </div>
-
         <button class="logout-btn" id="logoutBtn">Logout</button>
-
       </div>
     </div>
   </main>
-
+  <!-- New Profile Edit Modal -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeProfileModal">&times;</span>
+      <h3>Edit Profile</h3>
+      <form id="profileForm">
+        <label>
+          Name
+          <input type="text" id="editName" required>
+        </label>
+        <label>
+          Phone
+          <input type="tel" id="editPhone" required>
+        </label>
+        <label>
+          Location
+          <input type="text" id="editLocation" required>
+        </label>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
-
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-
+    import { getAuth, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
       authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -297,15 +377,14 @@
       appId: "1:138891180312:web:8ebaaa3dea688da21d066d",
       measurementId: "G-LG5XX2436Q"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
     $(document).ready(function() {
       setTimeout(() => {
         $('#accountSection').addClass('visible');
       }, 300);
-
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
           $('#topBar').addClass('scrolled');
@@ -314,14 +393,102 @@
         }
       });
 
-      onAuthStateChanged(auth, (user) => {
+      onAuthStateChanged(auth, async (user) => {
         if (user) {
           $('#welcomeMsg').text(`Welcome back, ${user.displayName || user.email.split('@')[0]}! Here's a quick snapshot of your activity.`);
           $('#userEmail').text(user.email);
-          // TODO: Load additional profile data if needed
+          $('#userName').text(user.displayName || 'Not set');
+
+          // Fetch additional profile data from Firestore
+          try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              $('#userPhone').text(data.phone || '(Not set)');
+              $('#userLocation').text(data.location || 'Not set');
+            } else {
+              // Create initial doc if it doesn't exist
+              await setDoc(userDocRef, {
+                phone: '(313) 555-0192', // Default from your code
+                location: 'Detroit, Michigan'
+              });
+              $('#userPhone').text('(313) 555-0192');
+              $('#userLocation').text('Detroit, Michigan');
+            }
+          } catch (error) {
+            console.error('Error loading profile:', error);
+          }
         } else {
           window.location.href = 'login.html';
         }
+      });
+
+      // Profile Edit Modal Handling
+      const modal = $('#profileModal');
+      const closeBtn = $('#closeProfileModal');
+      const editBtn = $('#editProfileBtn');
+      const form = $('#profileForm');
+
+      editBtn.on('click', async function() {
+        const user = auth.currentUser;
+        if (user) {
+          // Pre-fill form with current data
+          $('#editName').val($('#userName').text() !== 'Not set' ? $('#userName').text() : '');
+          $('#editPhone').val($('#userPhone').text() !== 'Not set' ? $('#userPhone').text() : '');
+          $('#editLocation').val($('#userLocation').text() !== 'Not set' ? $('#userLocation').text() : '');
+          modal.css('display', 'flex');
+        }
+      });
+
+      closeBtn.on('click', function() {
+        modal.css('display', 'none');
+      });
+
+      $(window).on('click', function(e) {
+        if (e.target === modal[0]) {
+          modal.css('display', 'none');
+        }
+      });
+
+      form.on('submit', async function(e) {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (user) {
+          const newName = $('#editName').val().trim();
+          const newPhone = $('#editPhone').val().trim();
+          const newLocation = $('#editLocation').val().trim();
+
+          try {
+            // Update Auth displayName
+            if (newName && newName !== user.displayName) {
+              await updateProfile(user, { displayName: newName });
+              $('#userName').text(newName);
+              $('#welcomeMsg').text(`Welcome back, ${newName}! Here's a quick snapshot of your activity.`);
+            }
+
+            // Update Firestore
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, {
+              phone: newPhone,
+              location: newLocation
+            }, { merge: true });
+
+            $('#userPhone').text(newPhone || 'Not set');
+            $('#userLocation').text(newLocation || 'Not set');
+
+            modal.css('display', 'none');
+            alert('Profile updated successfully!');
+          } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Failed to update profile. Please try again.');
+          }
+        }
+      });
+
+      // Placeholder for other edit buttons
+      $('.edit-btn:not(#editProfileBtn)').on('click', function() {
+        alert('Edit form opening soon — we’ll make this a nice modal next!');
       });
 
       $('#logoutBtn').on('click', function(e) {
@@ -331,10 +498,6 @@
         }).catch((error) => {
           console.error('Logout error:', error);
         });
-      });
-
-      $('.edit-btn').on('click', function() {
-        alert('Edit form opening soon — we’ll make this a nice modal next!');
       });
     });
   </script>
