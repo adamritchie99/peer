@@ -356,6 +356,12 @@
       height: 1.5rem;
       margin: 0;
     }
+    #mfaEnrollSection, #mfaCodeSection {
+      display: none;
+    }
+    #recaptcha-container {
+      margin-top: 1rem;
+    }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(50px); } to { transform: translateY(0); } }
     footer {
@@ -553,12 +559,25 @@
         </label>
         <hr style="border-color: #444; margin: 1.5rem 0;">
         <h4>Two-Factor Authentication</h4>
-        <label class="toggle-label">
-          <span>Enable Two-Factor Authentication</span>
-          <input type="checkbox" id="enableMFA">
-        </label>
+        <p id="mfaStatus" style="font-size: 0.9rem; color: #aaa;">Status: <span id="mfaStatusText">Loading...</span></p>
+        <div id="mfaEnrollSection">
+          <label>
+            Phone Number (for SMS verification)
+            <input type="tel" id="mfaPhone" placeholder="(XXX) XXX-XXXX" required>
+          </label>
+          <div id="recaptcha-container"></div>
+          <button type="button" id="sendMfaCodeBtn">Send Verification Code</button>
+        </div>
+        <div id="mfaCodeSection">
+          <label>
+            Verification Code
+            <input type="text" id="mfaVerificationCode" required maxlength="6">
+          </label>
+          <button type="button" id="verifyMfaCodeBtn">Verify and Enroll</button>
+        </div>
+        <button type="button" id="unenrollMfaBtn" style="display: none; background: #dc3545; margin-top: 1rem;">Unenroll 2FA</button>
         <p style="font-size: 0.9rem; color: #aaa;">When enabled, you'll be prompted for a verification code during login.</p>
-        <button type="submit">Save Changes</button>
+        <button type="submit">Save Password Changes</button> <!-- Note: MFA handled separately via buttons -->
       </form>
     </div>
   </div>
@@ -569,7 +588,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
    
     const firebaseConfig = {
@@ -586,9 +605,11 @@
     const db = getFirestore(app);
     let addresses = [];
     let payments = [];
-    let mfaEnabled = false;
+    let enrolledFactors = [];
     let currentEditingIndex = -1;
     let currentPaymentEditingIndex = -1;
+    let verificationId = ''; // For MFA code verification
+    let recaptchaVerifier; // For reCAPTCHA
     function cleanPhone(phone) {
       return phone.replace(/\D/g, '');
     }
@@ -619,10 +640,6 @@
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { payments }, { merge: true });
     }
-    async function saveMFA(user, enabled) {
-      const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, { mfaEnabled: enabled }, { merge: true });
-    }
     function renderPrimaryAddress() {
       const primary = addresses.find(a => a.isDefault) || addresses[0] || null;
       $('#primaryAddress').text(primary ? formatAddress(primary) : 'Not set');
@@ -632,7 +649,7 @@
       $('#primaryPayment').text(primary ? formatPayment(primary) : 'Not set');
     }
     function renderMFAStatus() {
-      $('#userMFA').text(mfaEnabled ? 'Enabled' : 'Disabled');
+      $('#userMFA').text(enrolledFactors.length > 0 ? 'Enabled' : 'Disabled');
     }
     function renderAddressList() {
       $('#addressList').empty();
@@ -750,14 +767,12 @@
             let location = 'Not set';
             addresses = [];
             payments = [];
-            mfaEnabled = false;
             if (userDoc.exists()) {
               const data = userDoc.data();
               rawPhone = data.phone || 'Not set';
               location = data.location || 'Not set';
               addresses = data.addresses || [];
               payments = data.payments || [];
-              mfaEnabled = data.mfaEnabled || false;
               console.log('Loaded data:', data);
             } else {
               console.log('No profile doc found.');
@@ -766,6 +781,8 @@
             $('#userLocation').text(location);
             renderPrimaryAddress();
             renderPrimaryPayment();
+            // Load real MFA status
+            enrolledFactors = await multiFactor(user).enrolledFactors;
             renderMFAStatus();
           } catch (error) {
             console.error('Error loading profile:', error.message);
@@ -775,7 +792,7 @@
         }
       });
       // Apply masks
-      $('#editPhone').mask('(000) 000-0000');
+      $('#editPhone, #mfaPhone').mask('(000) 000-0000');
       $('#editCardNumber').mask('0000 0000 0000 0000');
       $('#editExpMonth').mask('00');
       $('#editExpYear').mask('0000');
@@ -789,10 +806,10 @@
         const user = auth.currentUser;
         if (user) {
           // Pre-fill form with current data
-          $$   ('#editName').val(   $$('#userName').text() !== 'Not set' ? $('#userName').text() : '');
+          $('#editName').val($('#userName').text() !== 'Not set' ? $('#userName').text() : '');
           const currentPhone = $('#userPhone').text();
           $('#editPhone').val(currentPhone !== 'Not set' ? currentPhone : '');
-          $$   ('#editLocation').val(   $$('#userLocation').text() !== 'Not set' ? $('#userLocation').text() : '');
+          $('#editLocation').val($('#userLocation').text() !== 'Not set' ? $('#userLocation').text() : '');
           profileModal.css('display', 'flex');
         }
       });
@@ -1061,23 +1078,128 @@
       const closeSecurityBtn = $('#closeSecurityModal');
       const securityForm = $('#securityForm');
       const securitySubmitBtn = securityForm.find('button[type="submit"]');
-      $('#updateSecurityBtn').on('click', () => {
-        $('#enableMFA').prop('checked', mfaEnabled);
-        $('#currentPassword').val('');
-        $('#newPassword').val('');
-        $('#confirmPassword').val('');
-        securityModal.css('display', 'flex');
+      const sendMfaCodeBtn = $('#sendMfaCodeBtn');
+      const verifyMfaCodeBtn = $('#verifyMfaCodeBtn');
+      const unenrollMfaBtn = $('#unenrollMfaBtn');
+      $('#updateSecurityBtn').on('click', async () => {
+        const user = auth.currentUser;
+        if (user) {
+          enrolledFactors = await multiFactor(user).enrolledFactors;
+          $('#mfaStatusText').text(enrolledFactors.length > 0 ? `Enabled (Phone: ${enrolledFactors[0].displayName || 'Set'})` : 'Disabled');
+          $('#mfaEnrollSection, #mfaCodeSection').hide();
+          if (enrolledFactors.length > 0) {
+            unenrollMfaBtn.show();
+          } else {
+            unenrollMfaBtn.hide();
+            $('#mfaEnrollSection').show();
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const rawPhone = userDoc.data()?.phone || '';
+            $('#mfaPhone').val(rawPhone ? formatPhoneNumber(rawPhone) : '');
+          }
+          // Init reCAPTCHA (invisible)
+          recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+          $('#currentPassword').val('');
+          $('#newPassword').val('');
+          $('#confirmPassword').val('');
+          securityModal.css('display', 'flex');
+        }
       });
       closeSecurityBtn.on('click', () => {
         securityModal.css('display', 'none');
-        securitySubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
+        securitySubmitBtn.removeClass('loading success error').text('Save Password Changes').prop('disabled', false);
+        if (recaptchaVerifier) recaptchaVerifier.clear();
       });
       $(window).on('click', (e) => {
         if (e.target === securityModal[0]) {
           securityModal.css('display', 'none');
-          securitySubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
+          securitySubmitBtn.removeClass('loading success error').text('Save Password Changes').prop('disabled', false);
+          if (recaptchaVerifier) recaptchaVerifier.clear();
         }
       });
+      // Send MFA Code
+      sendMfaCodeBtn.on('click', async () => {
+        const user = auth.currentUser;
+        const phoneFormatted = $('#mfaPhone').val().trim();
+        const phone = cleanPhone(phoneFormatted);
+        if (!phone || phone.length !== 10) {
+          alert('Enter a valid 10-digit phone number.');
+          return;
+        }
+        sendMfaCodeBtn.addClass('loading').text('Sending...').prop('disabled', true);
+        try {
+          const mfaSession = await multiFactor(user).getSession();
+          const phoneInfoOptions = { phoneNumber: `+1${phone}`, session: mfaSession };
+          const phoneAuthProvider = new PhoneAuthProvider(auth);
+          verificationId = await phoneAuthProvider.verifyPhoneNumber(phoneInfoOptions, recaptchaVerifier);
+          $('#mfaEnrollSection').hide();
+          $('#mfaCodeSection').show();
+          sendMfaCodeBtn.removeClass('loading').text('Send Verification Code').prop('disabled', false);
+          alert('Verification code sent to your phone.');
+        } catch (error) {
+          console.error('Error sending MFA code:', error);
+          sendMfaCodeBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+          setTimeout(() => {
+            sendMfaCodeBtn.removeClass('error').text('Send Verification Code').prop('disabled', false);
+          }, 3000);
+          recaptchaVerifier.clear();
+        }
+      });
+      // Verify MFA Code and Enroll
+      verifyMfaCodeBtn.on('click', async () => {
+        const user = auth.currentUser;
+        const code = $('#mfaVerificationCode').val().trim();
+        if (!code || code.length !== 6) {
+          alert('Enter the 6-digit code.');
+          return;
+        }
+        verifyMfaCodeBtn.addClass('loading').text('Verifying...').prop('disabled', true);
+        try {
+          const cred = PhoneAuthProvider.credential(verificationId, code);
+          const mfaAssertion = PhoneMultiFactorGenerator.assertion(cred);
+          await multiFactor(user).enroll(mfaAssertion, 'My Phone'); // Display name for factor
+          enrolledFactors = await multiFactor(user).enrolledFactors;
+          renderMFAStatus();
+          $('#mfaCodeSection').hide();
+          unenrollMfaBtn.show();
+          verifyMfaCodeBtn.removeClass('loading').addClass('success').text('Enrolled');
+          setTimeout(() => {
+            verifyMfaCodeBtn.removeClass('success').text('Verify and Enroll').prop('disabled', false);
+          }, 1500);
+          recaptchaVerifier.clear();
+        } catch (error) {
+          console.error('Error enrolling MFA:', error);
+          verifyMfaCodeBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+          setTimeout(() => {
+            verifyMfaCodeBtn.removeClass('error').text('Verify and Enroll').prop('disabled', false);
+          }, 3000);
+          recaptchaVerifier.clear();
+        }
+      });
+      // Unenroll MFA
+      unenrollMfaBtn.on('click', async () => {
+        if (confirm('Disable 2FA? This will remove your phone as a second factor.')) {
+          const user = auth.currentUser;
+          unenrollMfaBtn.addClass('loading').text('Unenrolling...').prop('disabled', true);
+          try {
+            await multiFactor(user).unenroll(enrolledFactors[0]);
+            enrolledFactors = await multiFactor(user).enrolledFactors;
+            renderMFAStatus();
+            unenrollMfaBtn.hide();
+            $('#mfaEnrollSection').show();
+            unenrollMfaBtn.removeClass('loading').addClass('success').text('Unenrolled');
+            setTimeout(() => {
+              unenrollMfaBtn.removeClass('success').text('Unenroll 2FA').prop('disabled', false);
+            }, 1500);
+          } catch (error) {
+            console.error('Error unenrolling MFA:', error);
+            unenrollMfaBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+            setTimeout(() => {
+              unenrollMfaBtn.removeClass('error').text('Unenroll 2FA').prop('disabled', false);
+            }, 3000);
+          }
+        }
+      });
+      // Password Change Submit (MFA handled separately)
       securityForm.on('submit', async (e) => {
         e.preventDefault();
         const user = auth.currentUser;
@@ -1085,8 +1207,6 @@
           const currentPassword = $('#currentPassword').val();
           const newPassword = $('#newPassword').val();
           const confirmPassword = $('#confirmPassword').val();
-          const newMFA = $('#enableMFA').prop('checked');
-          let passwordChanged = false;
           if (newPassword || confirmPassword) {
             if (newPassword !== confirmPassword) {
               alert('New passwords do not match.');
@@ -1096,40 +1216,30 @@
               alert('New password must be at least 6 characters.');
               return;
             }
-            passwordChanged = true;
-          }
-          securitySubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
-          try {
-            if (passwordChanged) {
+            securitySubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
+            try {
               // Reauthenticate
               const credential = EmailAuthProvider.credential(user.email, currentPassword);
               await reauthenticateWithCredential(user, credential);
               // Update password
               await updatePassword(user, newPassword);
+              securitySubmitBtn.removeClass('loading').addClass('success').text('Password Updated');
+              setTimeout(() => {
+                securitySubmitBtn.removeClass('success').text('Save Password Changes').prop('disabled', false);
+              }, 1500);
+            } catch (error) {
+              console.error('Error updating password:', error.message);
+              let errorMsg = 'Failed: ' + error.code;
+              if (error.code === 'auth/wrong-password') {
+                errorMsg = 'Incorrect current password.';
+              } else if (error.code === 'auth/requires-recent-login') {
+                errorMsg = 'Please log out and log back in to change password.';
+              }
+              securitySubmitBtn.removeClass('loading').addClass('error').text(errorMsg);
+              setTimeout(() => {
+                securitySubmitBtn.removeClass('error').text('Save Password Changes').prop('disabled', false);
+              }, 3000);
             }
-            if (newMFA !== mfaEnabled) {
-              // For MVP, just toggle in Firestore; real 2FA would require setup
-              mfaEnabled = newMFA;
-              await saveMFA(user, mfaEnabled);
-              renderMFAStatus();
-            }
-            securitySubmitBtn.removeClass('loading').addClass('success').text('Saved');
-            setTimeout(() => {
-              securityModal.css('display', 'none');
-              securitySubmitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
-            }, 1500);
-          } catch (error) {
-            console.error('Error updating security:', error.message);
-            let errorMsg = 'Failed: ' + error.code;
-            if (error.code === 'auth/wrong-password') {
-              errorMsg = 'Incorrect current password.';
-            } else if (error.code === 'auth/requires-recent-login') {
-              errorMsg = 'Please log out and log back in to change password.';
-            }
-            securitySubmitBtn.removeClass('loading').addClass('error').text(errorMsg);
-            setTimeout(() => {
-              securitySubmitBtn.removeClass('error').text('Save Changes').prop('disabled', false);
-            }, 3000);
           }
         }
       });
