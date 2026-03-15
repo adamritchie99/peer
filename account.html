@@ -397,7 +397,7 @@
       <div class="dashboard">
         <h2>Account Overview</h2>
         <p id="welcomeMsg">Welcome back, Adam! Here's a quick snapshot of your activity.</p>
-     
+    
         <div class="snapshot">
           <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
           <div>Total Sales: $0 (View details in <a href="sell.html" style="color: #ED1C24;">Sellers Dashboard</a>)</div>
@@ -435,13 +435,13 @@
           </div>
           <button class="edit-btn" id="updateSecurityBtn" style="margin-top: 1rem;">Update Security</button>
         </div>
-        <div class="details-card">
+        <div class="details-card" id="preferencesCard">
           <h3>Preferences</h3>
           <div class="details-grid">
-            <span>Notifications</span><span>Email + SMS</span>
-            <span>Theme</span><span>Dark (default)</span>
+            <span>Notifications</span><span id="currentNotifications">Email + SMS</span>
+            <span>Theme</span><span id="currentTheme">Dark (default)</span>
           </div>
-          <button class="edit-btn" style="margin-top: 1rem;">Edit Preferences</button>
+          <button class="edit-btn" id="editPreferencesBtn" style="margin-top: 1rem;">Edit Preferences</button>
         </div>
         <button class="logout-btn" id="logoutBtn">Logout</button>
       </div>
@@ -588,6 +588,33 @@
       </form>
     </div>
   </div>
+  <!-- Preferences Edit Modal -->
+  <div id="preferencesModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closePreferencesModal">&times;</span>
+      <h3>Edit Preferences</h3>
+      <form id="preferencesForm">
+        <label>
+          Notifications
+          <select id="editNotifications">
+            <option value="email+sms">Email + SMS</option>
+            <option value="email">Email only</option>
+            <option value="sms">SMS only</option>
+            <option value="none">None</option>
+          </select>
+        </label>
+        <label>
+          Theme
+          <select id="editTheme">
+            <option value="dark">Dark (default)</option>
+            <option value="light">Light</option>
+            <option value="system">System</option>
+          </select>
+        </label>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
@@ -597,7 +624,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier, sendEmailVerification, getMultiFactorResolver } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-  
+ 
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
       authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -619,6 +646,7 @@
     let recaptchaVerifier; // For reCAPTCHA
     let reauthResolver; // To store the resolver during reauth
     let reauthVerificationId = ''; // Separate from enrollment verificationId
+    let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default preferences
     function cleanPhone(phone) {
       return phone.replace(/\D/g, '');
     }
@@ -649,6 +677,10 @@
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { payments }, { merge: true });
     }
+    async function savePreferences(user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { preferences }, { merge: true });
+    }
     function renderPrimaryAddress() {
       const primary = addresses.find(a => a.isDefault) || addresses[0] || null;
       $('#primaryAddress').text(primary ? formatAddress(primary) : 'Not set');
@@ -659,6 +691,41 @@
     }
     function renderMFAStatus() {
       $('#userMFA').text(enrolledFactors.length > 0 ? 'Enabled' : 'Disabled');
+    }
+    function renderPreferences() {
+      let notifText;
+      switch (preferences.notifications) {
+        case 'email+sms':
+          notifText = 'Email + SMS';
+          break;
+        case 'email':
+          notifText = 'Email only';
+          break;
+        case 'sms':
+          notifText = 'SMS only';
+          break;
+        case 'none':
+          notifText = 'None';
+          break;
+        default:
+          notifText = 'Email + SMS';
+      }
+      $('#currentNotifications').text(notifText);
+      let themeText;
+      switch (preferences.theme) {
+        case 'dark':
+          themeText = 'Dark (default)';
+          break;
+        case 'light':
+          themeText = 'Light';
+          break;
+        case 'system':
+          themeText = 'System';
+          break;
+        default:
+          themeText = 'Dark (default)';
+      }
+      $('#currentTheme').text(themeText);
     }
     function renderAddressList() {
       $('#addressList').empty();
@@ -782,6 +849,7 @@
               location = data.location || 'Not set';
               addresses = data.addresses || [];
               payments = data.payments || [];
+              preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
               console.log('Loaded data:', data);
             } else {
               console.log('No profile doc found.');
@@ -790,6 +858,7 @@
             $('#userLocation').text(location);
             renderPrimaryAddress();
             renderPrimaryPayment();
+            renderPreferences();
             // Load real MFA status
             enrolledFactors = await multiFactor(user).enrolledFactors;
             renderMFAStatus();
@@ -1329,8 +1398,54 @@
           }, 3000);
         }
       });
+      // Preferences Edit Modal Handling
+      const preferencesModal = $('#preferencesModal');
+      const closePreferencesBtn = $('#closePreferencesModal');
+      const preferencesForm = $('#preferencesForm');
+      const preferencesSubmitBtn = preferencesForm.find('button[type="submit"]');
+      $('#editPreferencesBtn').on('click', function() {
+        $('#editNotifications').val(preferences.notifications);
+        $('#editTheme').val(preferences.theme);
+        preferencesModal.css('display', 'flex');
+      });
+      closePreferencesBtn.on('click', function() {
+        preferencesModal.css('display', 'none');
+        preferencesSubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
+      });
+      $(window).on('click', function(e) {
+        if (e.target === preferencesModal[0]) {
+          preferencesModal.css('display', 'none');
+          preferencesSubmitBtn.removeClass('loading success error').text('Save Changes').prop('disabled', false);
+        }
+      });
+      preferencesForm.on('submit', async function(e) {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (user) {
+          const newNotifications = $('#editNotifications').val();
+          const newTheme = $('#editTheme').val();
+          preferencesSubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
+          try {
+            preferences.notifications = newNotifications;
+            preferences.theme = newTheme;
+            await savePreferences(user);
+            renderPreferences();
+            preferencesSubmitBtn.removeClass('loading').addClass('success').text('Saved');
+            setTimeout(() => {
+              preferencesModal.css('display', 'none');
+              preferencesSubmitBtn.removeClass('success').text('Save Changes').prop('disabled', false);
+            }, 1500);
+          } catch (error) {
+            console.error('Error updating preferences:', error.message);
+            preferencesSubmitBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+            setTimeout(() => {
+              preferencesSubmitBtn.removeClass('error').text('Save Changes').prop('disabled', false);
+            }, 3000);
+          }
+        }
+      });
       // Placeholder for other edit buttons
-      $('.edit-btn:not(#editProfileBtn):not(#manageAddressesBtn):not(#managePaymentsBtn):not(#updateSecurityBtn)').on('click', function() {
+      $('.edit-btn:not(#editProfileBtn):not(#manageAddressesBtn):not(#managePaymentsBtn):not(#updateSecurityBtn):not(#editPreferencesBtn)').on('click', function() {
         alert('Edit form opening soon — we’ll make this a nice modal next!');
       });
       $('#logoutBtn').on('click', function(e) {
