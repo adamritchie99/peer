@@ -6,18 +6,87 @@
   <title>Peer Auto - Sellers Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --text-color: white;
+      --card-bg: #111;
+      --card-border: #333;
+      --pill-bg: #1a1a1a;
+      --pill-border: #444;
+      --link-color: #ddd;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #ccc;
+      --footer-color: #aaa;
+      --modal-bg: #1a1a1a;
+      --modal-border: #444;
+      --input-bg: #111;
+      --input-border: #333;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #444;
+      --btn-hover: #666;
+      --top-bar-bg: rgba(15,15,15,0.92);
+      --top-bar-border: #222;
+      --snapshot-bg: #1a1a1a;
+      --snapshot-border: #444;
+      --details-bg: #1a1a1a;
+      --details-border: #444;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      --stat-bg: #1a1a1a;
+      --stat-border: #444;
+      --accordion-bg: #1a1a1a;
+      --accordion-border: #444;
+      --accordion-hover: #222;
+      --ytd-color: #ccc;
+    }
+    body.light-theme {
+      --bg-color: #f0f0f0;
+      --text-color: #0f0f0f;
+      --card-bg: #fff;
+      --card-border: #ddd;
+      --pill-bg: #f5f5f5;
+      --pill-border: #ccc;
+      --link-color: #333;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #666;
+      --footer-color: #555;
+      --modal-bg: #fff;
+      --modal-border: #ddd;
+      --input-bg: #f5f5f5;
+      --input-border: #ccc;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #ddd;
+      --btn-hover: #ccc;
+      --top-bar-bg: rgba(240,240,240,0.92);
+      --top-bar-border: #ddd;
+      --snapshot-bg: #f5f5f5;
+      --snapshot-border: #ccc;
+      --details-bg: #f5f5f5;
+      --details-border: #ccc;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      --stat-bg: #f5f5f5;
+      --stat-border: #ccc;
+      --accordion-bg: #f5f5f5;
+      --accordion-border: #ccc;
+      --accordion-hover: #eee;
+      --ytd-color: #666;
+    }
     body, html {
       margin: 0;
       padding: 0;
       min-height: 100vh;
       font-family: system-ui, sans-serif;
-      background: #0f0f0f;
-      color: white;
+      background: var(--bg-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
     }
     main { flex: 1; }
-
     /* Top bar */
     .top-bar {
       position: sticky;
@@ -27,9 +96,9 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.8rem 1.5rem;
-      background: rgba(15,15,15,0.92);
+      background: var(--top-bar-bg);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--top-bar-border);
       transition: all 0.3s ease;
     }
     .top-bar.scrolled {
@@ -37,7 +106,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
     .logo a {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
@@ -51,10 +120,9 @@
       transition: transform 0.2s ease;
     }
     .logo a:hover { transform: scale(1.05); }
-
     .nav-pill {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--pill-bg);
+      border: 1px solid var(--pill-border);
       border-radius: 50px;
       padding: 0.4rem;
       display: flex;
@@ -62,7 +130,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     .nav-pill a {
-      color: #ddd;
+      color: var(--link-color);
       text-decoration: none;
       font-weight: 600;
       padding: 0.6rem 1.2rem;
@@ -71,11 +139,10 @@
       font-size: clamp(0.95rem, 2.5vw, 1.05rem);
     }
     .nav-pill a:hover, .nav-pill a:focus {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       transform: translateY(-1px);
     }
-
     .sell-section {
       min-height: 85vh;
       display: flex;
@@ -99,13 +166,12 @@
     .dashboard {
       width: 100%;
       max-width: 900px;
-      background: #111;
-      border: 1px solid #333;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 2rem;
       text-align: left;
     }
-
     /* Stats row */
     .stats {
       display: flex;
@@ -116,29 +182,28 @@
     .stat-card {
       flex: 1;
       min-width: 180px;
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--stat-bg);
+      border: 1px solid var(--stat-border);
       border-radius: 12px;
       padding: 1.2rem;
       text-align: center;
     }
-    .stat-card h3 { 
-      font-size: 2.2rem; 
-      margin: 0; 
-      color: #ED1C24; 
+    .stat-card h3 {
+      font-size: 2.2rem;
+      margin: 0;
+      color: var(--accent-color);
     }
-    .stat-card p { 
-      margin: 0.3rem 0 0; 
-      font-size: 0.95rem; 
-      color: #aaa; 
+    .stat-card p {
+      margin: 0.3rem 0 0;
+      font-size: 0.95rem;
+      color: var(--footer-color);
     }
     .earnings .ytd {
       margin-top: 0.6rem;
       font-size: 0.95rem;
-      color: #ccc;
+      color: var(--ytd-color);
       opacity: 0.9;
     }
-
     /* Big centered create button — bigger & cleaner */
     .create-btn {
       display: block;
@@ -148,24 +213,23 @@
       padding: 1.6rem 2.8rem;
       font-size: 1.45rem;
       font-weight: 700;
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       border: none;
       border-radius: 14px;
       cursor: pointer;
       transition: all 0.25s ease;
-      box-shadow: 0 6px 20px rgba(237, 28, 36, 0.3);
+      box-shadow: 0 6px 20px var(--logout-shadow);
     }
     .create-btn:hover {
-      background: #c4171f;
+      background: var(--accent-hover);
       transform: translateY(-3px);
-      box-shadow: 0 12px 35px rgba(237, 28, 36, 0.45);
+      box-shadow: 0 12px 35px var(--logout-shadow-hover);
     }
-
     /* Accordion */
     .accordion {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--accordion-bg);
+      border: 1px solid var(--accordion-border);
       border-radius: 12px;
       margin-bottom: 1rem;
       overflow: hidden;
@@ -178,32 +242,67 @@
       justify-content: space-between;
       align-items: center;
     }
-    .accordion-header:hover { background: #222; }
+    .accordion-header:hover { background: var(--accordion-hover); }
     .accordion-content {
       padding: 0 1.4rem 1.4rem;
       display: none;
-      color: #ccc;
+      color: var(--subtext-color);
     }
     .accordion.active .accordion-content { display: block; }
     .accordion-icon { font-size: 1.3rem; }
-
     footer {
       text-align: center;
       padding: 2rem 1rem;
       font-size: 0.9rem;
-      color: #aaa;
+      color: var(--footer-color);
       opacity: 0.7;
       margin-top: auto;
     }
-
     @media (max-width: 700px) {
       .stats { flex-direction: column; }
       .stat-card { min-width: 100%; }
       .create-btn { max-width: 100%; }
     }
+    @media (prefers-color-scheme: light) {
+      body.system-theme {
+        --bg-color: #f0f0f0;
+        --text-color: #0f0f0f;
+        --card-bg: #fff;
+        --card-border: #ddd;
+        --pill-bg: #f5f5f5;
+        --pill-border: #ccc;
+        --link-color: #333;
+        --accent-color: #ED1C24;
+        --accent-hover: #c4171f;
+        --subtext-color: #666;
+        --footer-color: #555;
+        --modal-bg: #fff;
+        --modal-border: #ddd;
+        --input-bg: #f5f5f5;
+        --input-border: #ccc;
+        --success: #28a745;
+        --error: #dc3545;
+        --btn-bg: #ddd;
+        --btn-hover: #ccc;
+        --top-bar-bg: rgba(240,240,240,0.92);
+        --top-bar-border: #ddd;
+        --snapshot-bg: #f5f5f5;
+        --snapshot-border: #ccc;
+        --details-bg: #f5f5f5;
+        --details-border: #ccc;
+        --logout-shadow: rgba(237, 28, 36, 0.3);
+        --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+        --stat-bg: #f5f5f5;
+        --stat-border: #ccc;
+        --accordion-bg: #f5f5f5;
+        --accordion-border: #ccc;
+        --accordion-hover: #eee;
+        --ytd-color: #666;
+      }
+    }
   </style>
 </head>
-<body>
+<body class="dark-theme">
   <div class="top-bar" id="topBar">
     <div class="logo">
       <a href="index.html">Peer Auto</a>
@@ -214,12 +313,10 @@
       <a href="account.html">Account</a>
     </div>
   </div>
-
   <main>
     <div class="sell-section" id="sellSection">
       <h1>Sellers Dashboard</h1>
       <div class="dashboard">
-
         <!-- Stats -->
         <div class="stats">
           <div class="stat-card">
@@ -240,12 +337,10 @@
             <p>New Messages</p>
           </div>
         </div>
-
         <!-- Big centered create button -->
         <button class="create-btn" id="create-listing-btn">
           + Post New Part for Sale
         </button>
-
         <!-- Sections -->
         <div class="accordion">
           <div class="accordion-header">
@@ -256,7 +351,6 @@
             <p>Direct chats with buyers asking about your parts.</p>
           </div>
         </div>
-
         <div class="accordion">
           <div class="accordion-header">
             <span>Orders to Fulfill</span>
@@ -266,7 +360,6 @@
             <p>Incoming buyer orders — accept, add tracking, mark shipped.</p>
           </div>
         </div>
-
         <div class="accordion">
           <div class="accordion-header">
             <span>My Listings</span>
@@ -276,7 +369,6 @@
             <p>Manage active parts, drafts, and sold items. Quick edit, pause, or delete.</p>
           </div>
         </div>
-
         <div class="accordion">
           <div class="accordion-header">
             <span>Sales History</span>
@@ -286,7 +378,6 @@
             <p>All completed sales with buyer details and earnings.</p>
           </div>
         </div>
-
         <div class="accordion">
           <div class="accordion-header">
             <span>Payouts & Earnings</span>
@@ -296,7 +387,6 @@
             <p>Track what you've earned and when you'll get paid.</p>
           </div>
         </div>
-
         <div class="accordion">
           <div class="accordion-header">
             <span>Reviews Received</span>
@@ -306,22 +396,63 @@
             <p>Buyer feedback — respond and build your reputation.</p>
           </div>
         </div>
-
       </div>
     </div>
   </main>
-
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
-
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
+      authDomain: "peer-marketplace-d3f43.firebaseapp.com",
+      projectId: "peer-marketplace-d3f43",
+      storageBucket: "peer-marketplace-d3f43.firebasestorage.app",
+      messagingSenderId: "138891180312",
+      appId: "1:138891180312:web:8ebaaa3dea688da21d066d",
+      measurementId: "G-LG5XX2436Q"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default preferences
+
+    function applyTheme() {
+      const body = $('body');
+      body.removeClass('dark-theme light-theme system-theme');
+      if (preferences.theme === 'light') {
+        body.addClass('light-theme');
+      } else if (preferences.theme === 'system') {
+        body.addClass('system-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (prefersLight) {
+          body.addClass('light-theme');
+        } else {
+          body.addClass('dark-theme');
+        }
+      } else {
+        body.addClass('dark-theme');
+      }
+    }
+
+    // System theme listener
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+    mediaQuery.addEventListener('change', (e) => {
+      if (preferences.theme === 'system') {
+        applyTheme();
+      }
+    });
+
     $(document).ready(function() {
       setTimeout(() => {
         $('#sellSection').addClass('visible');
       }, 300);
-
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
           $('#topBar').addClass('scrolled');
@@ -329,14 +460,29 @@
           $('#topBar').removeClass('scrolled');
         }
       });
-
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
+            }
+          } catch (error) {
+            console.error('Error loading preferences:', error.message);
+          }
+          applyTheme();
+        } else {
+          window.location.href = 'login.html';
+        }
+      });
       $('.accordion-header').on('click', function() {
         const acc = $(this).parent();
         acc.toggleClass('active');
         const icon = $(this).find('.accordion-icon');
         icon.text(acc.hasClass('active') ? '-' : '+');
       });
-
       $('#create-listing-btn').on('click', function() {
         alert('Opening new listing form — vehicle selector will be here soon!');
       });
