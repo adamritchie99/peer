@@ -6,18 +6,91 @@
   <title>Peer Auto</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --text-color: white;
+      --card-bg: #111;
+      --card-border: #333;
+      --pill-bg: #1a1a1a;
+      --pill-border: #444;
+      --link-color: #ddd;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #ccc;
+      --footer-color: #aaa;
+      --modal-bg: #1a1a1a;
+      --modal-border: #444;
+      --input-bg: #111;
+      --input-border: #333;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #444;
+      --btn-hover: #666;
+      --top-bar-bg: rgba(15,15,15,0.92);
+      --top-bar-border: #222;
+      --snapshot-bg: #1a1a1a;
+      --snapshot-border: #444;
+      --details-bg: #1a1a1a;
+      --details-border: #444;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      --secondary-bg: #222;
+      --secondary-border: #555;
+      --secondary-hover-bg: #2a2a2a;
+      --secondary-hover-border: #777;
+      --or-divider-color: #777;
+      --or-divider-bg: #444;
+      --select-arrow: white;
+      --focus-shadow: rgba(255,255,255,0.08);
+    }
+    body.light-theme {
+      --bg-color: #f0f0f0;
+      --text-color: #0f0f0f;
+      --card-bg: #fff;
+      --card-border: #ddd;
+      --pill-bg: #f5f5f5;
+      --pill-border: #ccc;
+      --link-color: #333;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #666;
+      --footer-color: #555;
+      --modal-bg: #fff;
+      --modal-border: #ddd;
+      --input-bg: #f5f5f5;
+      --input-border: #ccc;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #ddd;
+      --btn-hover: #ccc;
+      --top-bar-bg: rgba(240,240,240,0.92);
+      --top-bar-border: #ddd;
+      --snapshot-bg: #f5f5f5;
+      --snapshot-border: #ccc;
+      --details-bg: #f5f5f5;
+      --details-border: #ccc;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      --secondary-bg: #eee;
+      --secondary-border: #ccc;
+      --secondary-hover-bg: #ddd;
+      --secondary-hover-border: #bbb;
+      --or-divider-color: #888;
+      --or-divider-bg: #ccc;
+      --select-arrow: black;
+      --focus-shadow: rgba(0,0,0,0.08);
+    }
     body, html {
       margin: 0;
       padding: 0;
       min-height: 100vh;
       font-family: system-ui, sans-serif;
-      background: #0f0f0f;
-      color: white;
+      background: var(--bg-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
     }
     main { flex: 1; }
-
     /* Top bar - slightly tighter */
     .top-bar {
       position: sticky;
@@ -27,9 +100,9 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.8rem 1.5rem;
-      background: rgba(15,15,15,0.92);
+      background: var(--top-bar-bg);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--top-bar-border);
       transition: all 0.3s ease;
     }
     .top-bar.scrolled {
@@ -37,7 +110,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
     .logo a {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
@@ -55,8 +128,8 @@
     }
     /* Centered pill nav */
     .nav-pill {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--pill-bg);
+      border: 1px solid var(--pill-border);
       border-radius: 50px;
       padding: 0.4rem;
       display: flex;
@@ -64,7 +137,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     .nav-pill a {
-      color: #ddd;
+      color: var(--link-color);
       text-decoration: none;
       font-weight: 600;
       padding: 0.6rem 1.2rem;
@@ -74,7 +147,7 @@
     }
     .nav-pill a:hover,
     .nav-pill a:focus {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       transform: translateY(-1px);
     }
@@ -114,8 +187,8 @@
       margin: 0 0 1.8rem 0;
     }
     .selector-container {
-      background: #111;
-      border: 1px solid #333;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 1.8rem;
       margin-bottom: 2rem;
@@ -141,7 +214,7 @@
     }
     .status-msg {
       font-size: 0.9rem;
-      color: #aaa;
+      color: var(--footer-color);
       margin-top: 0.5rem;
       min-height: 1.2em;
     }
@@ -150,7 +223,7 @@
       align-items: center;
       justify-content: center;
       margin: 2rem 0;
-      color: #777;
+      color: var(--or-divider-color);
       font-size: 1.1rem;
       font-weight: 500;
     }
@@ -159,16 +232,16 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: #444;
+      background: var(--or-divider-bg);
       margin: 0 1rem;
     }
     button, select {
       width: 100%;
       padding: 1rem 1.4rem;
       font-size: 1.15rem;
-      background: #1a1a1a;
-      color: white;
-      border: 1px solid #444;
+      background: var(--secondary-bg);
+      color: var(--text-color);
+      border: 1px solid var(--secondary-border);
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -181,15 +254,15 @@
       font-weight: 600;
       letter-spacing: 0.03em;
     }
-    button:hover:not(:disabled), select:hover { background: #222; border-color: #666; }
+    button:hover:not(:disabled), select:hover { background: var(--secondary-hover-bg); border-color: var(--secondary-hover-border); }
     button:focus, select:focus {
       outline: none;
-      border-color: #888;
-      box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+      border-color: var(--secondary-hover-border);
+      box-shadow: 0 0 0 4px var(--focus-shadow);
     }
     select {
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='var(--select-arrow)' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 1.2rem center;
       background-size: 14px;
@@ -200,35 +273,35 @@
       max-width: 320px;
     }
     .clear-btn {
-      background: #222;
-      border-color: #555;
-      color: #ccc;
+      background: var(--secondary-bg);
+      border-color: var(--secondary-border);
+      color: var(--subtext-color);
       font-weight: 500;
     }
     .clear-btn:hover:not(:disabled) {
-      background: #2a2a2a;
-      border-color: #777;
-      color: white;
+      background: var(--secondary-hover-bg);
+      border-color: var(--secondary-hover-border);
+      color: var(--text-color);
     }
     .generic-btn {
       flex: 1;
       min-width: 220px;
       max-width: 320px;
-      background: #222;
-      border-color: #555;
+      background: var(--secondary-bg);
+      border-color: var(--secondary-border);
       font-size: 1.15rem;
       padding: 1rem 1.4rem;
     }
     .generic-btn:hover {
-      background: #2a2a2a;
-      border-color: #777;
-      box-shadow: 0 0 20px rgba(255,255,255,0.08);
+      background: var(--secondary-hover-bg);
+      border-color: var(--secondary-hover-border);
+      box-shadow: 0 0 20px var(--focus-shadow);
     }
     footer {
       text-align: center;
       padding: 2rem 1rem;
       font-size: 0.9rem;
-      color: #aaa;
+      color: var(--footer-color);
       opacity: 0.7;
       margin-top: auto;
     }
@@ -243,9 +316,48 @@
       .nav-pill { flex-direction: column; gap: 0.3rem; border-radius: 20px; }
       .nav-pill a { border-radius: 30px; padding: 0.6rem; }
     }
+    @media (prefers-color-scheme: light) {
+      body.system-theme {
+        --bg-color: #f0f0f0;
+        --text-color: #0f0f0f;
+        --card-bg: #fff;
+        --card-border: #ddd;
+        --pill-bg: #f5f5f5;
+        --pill-border: #ccc;
+        --link-color: #333;
+        --accent-color: #ED1C24;
+        --accent-hover: #c4171f;
+        --subtext-color: #666;
+        --footer-color: #555;
+        --modal-bg: #fff;
+        --modal-border: #ddd;
+        --input-bg: #f5f5f5;
+        --input-border: #ccc;
+        --success: #28a745;
+        --error: #dc3545;
+        --btn-bg: #ddd;
+        --btn-hover: #ccc;
+        --top-bar-bg: rgba(240,240,240,0.92);
+        --top-bar-border: #ddd;
+        --snapshot-bg: #f5f5f5;
+        --snapshot-border: #ccc;
+        --details-bg: #f5f5f5;
+        --details-border: #ccc;
+        --logout-shadow: rgba(237, 28, 36, 0.3);
+        --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+        --secondary-bg: #eee;
+        --secondary-border: #ccc;
+        --secondary-hover-bg: #ddd;
+        --secondary-hover-border: #bbb;
+        --or-divider-color: #888;
+        --or-divider-bg: #ccc;
+        --select-arrow: black;
+        --focus-shadow: rgba(0,0,0,0.08);
+      }
+    }
   </style>
 </head>
-<body>
+<body class="dark-theme">
   <div class="top-bar" id="topBar">
     <div class="logo">
       <a href="#" id="home-reset" onclick="return false;">Peer Auto</a>
@@ -261,7 +373,7 @@
       <h1>Zero fees to buy or sell any automotive products</h1>
       <div class="vehicle-selector">
         <h2>What vehicle are you shopping for?</h2>
-       
+      
         <div class="selector-container">
           <div class="dropdown-container">
             <div class="dropdown-group">
@@ -304,13 +416,57 @@
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
+      authDomain: "peer-marketplace-d3f43.firebaseapp.com",
+      projectId: "peer-marketplace-d3f43",
+      storageBucket: "peer-marketplace-d3f43.firebasestorage.app",
+      messagingSenderId: "138891180312",
+      appId: "1:138891180312:web:8ebaaa3dea688da21d066d",
+      measurementId: "G-LG5XX2436Q"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default
+
+    function applyTheme() {
+      const body = $('body');
+      body.removeClass('dark-theme light-theme system-theme');
+      if (preferences.theme === 'light') {
+        body.addClass('light-theme');
+      } else if (preferences.theme === 'system') {
+        body.addClass('system-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (prefersLight) {
+          body.addClass('light-theme');
+        } else {
+          body.addClass('dark-theme');
+        }
+      } else {
+        body.addClass('dark-theme');
+      }
+    }
+
+    // System theme listener
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+    mediaQuery.addEventListener('change', (e) => {
+      if (preferences.theme === 'system') {
+        applyTheme();
+      }
+    });
+
     $(document).ready(function() {
       // Fade in hero for subtle polish
       setTimeout(() => {
         $('#hero').addClass('visible');
       }, 300);
-
       // Scroll effect on top bar
       $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
@@ -319,10 +475,23 @@
           $('#topBar').removeClass('scrolled');
         }
       });
-
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+              const data = userDoc.data();
+              preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
+            }
+          } catch (error) {
+            console.error('Error loading preferences:', error.message);
+          }
+        }
+        applyTheme();
+      });
       // Cache object for API responses (year -> makes, year-make -> models)
       const apiCache = {};
-
       // Reset function (shared by Clear button and Home logo)
       function resetForm(scrollToTop = true) {
         $('#year').val('').trigger('change');
@@ -336,15 +505,12 @@
           window.scrollTo({top: 0, behavior: 'smooth'});
         }
       }
-
       // Home logo resets form + scrolls to top
       $('#home-reset').on('click', function() {
         resetForm();
       });
-
       // Clear / Reset button uses same reset function (no scroll)
       $('#clear-vehicle-btn').on('click', () => resetForm(false));
-
       // Your CarQuery setup
       const currentYear = new Date().getFullYear();
       const minYear = 1900;
@@ -355,12 +521,10 @@
       const searchBtn = $('#search-vehicle-btn').attr('aria-label', 'Search for vehicle-specific parts');
       const makeStatus = $('#make-status');
       const modelStatus = $('#model-status');
-
       // Populate years
       for (let y = currentYear + 1; y >= minYear; y--) {
         yearSelect.append(`<option value="${y}">${y}</option>`);
       }
-
       // Debounce function to prevent rapid API calls
       function debounce(fn, delay) {
         let timeout;
@@ -369,7 +533,6 @@
           timeout = setTimeout(() => fn.apply(this, args), delay);
         };
       }
-
       // Load saved selection from localStorage
       function loadSavedSelection() {
         const saved = JSON.parse(localStorage.getItem('vehicleSelection'));
@@ -384,7 +547,6 @@
           updateSearchButton();
         }
       }
-
       // Year change handler (debounced)
       const handleYearChange = debounce(function() {
         const year = $(this).val();
@@ -392,7 +554,6 @@
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
         makeStatus.text('');
         modelStatus.text('');
-
         if (year) {
           if (apiCache[year]) {
             populateMakes(apiCache[year]);
@@ -413,7 +574,6 @@
         updateSearchButton();
         saveSelection();
       }, 300);
-
       function populateMakes(makes) {
         makeStatus.text('');
         if (makes.length > 0) {
@@ -425,9 +585,7 @@
         }
         updateSearchButton();
       }
-
       yearSelect.on('change', handleYearChange);
-
       // Make change handler (debounced)
       const handleMakeChange = debounce(function() {
         const make = $(this).val();
@@ -435,7 +593,6 @@
         const cacheKey = `${year}-${make}`;
         modelSelect.empty().append('<option value="" disabled selected>Select Model</option>').prop('disabled', true);
         modelStatus.text('');
-
         if (make && year) {
           if (apiCache[cacheKey]) {
             populateModels(apiCache[cacheKey]);
@@ -455,7 +612,6 @@
         }
         saveSelection();
       }, 300);
-
       function populateModels(models) {
         modelStatus.text('');
         if (models.length > 0) {
@@ -467,15 +623,12 @@
         }
         updateSearchButton();
       }
-
       makeSelect.on('change', handleMakeChange);
-
       // Model change
       modelSelect.on('change', function() {
         updateSearchButton();
         saveSelection();
       });
-
       function saveSelection() {
         const selection = {
           year: yearSelect.val(),
@@ -484,14 +637,12 @@
         };
         localStorage.setItem('vehicleSelection', JSON.stringify(selection));
       }
-
       function updateSearchButton() {
         const y = yearSelect.val();
         const m = makeSelect.val();
         const mod = modelSelect.val();
         searchBtn.prop('disabled', !(y && m && mod));
       }
-
       // Vehicle search button
       $('#search-vehicle-btn').on('click', function() {
         const y = yearSelect.val();
@@ -504,12 +655,10 @@
           alert('Please select year, make, and model first!');
         }
       });
-
       // Generic button
       $('#generic-btn').on('click', function() {
         console.log('Redirecting to generic/universal automotive goods: /goods');
       });
-
       // Load any saved selection on init
       loadSavedSelection();
       updateSearchButton();
