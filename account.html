@@ -6,13 +6,71 @@
   <title>Peer Auto - Account</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --text-color: white;
+      --card-bg: #111;
+      --card-border: #333;
+      --pill-bg: #1a1a1a;
+      --pill-border: #444;
+      --link-color: #ddd;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #ccc;
+      --footer-color: #aaa;
+      --modal-bg: #1a1a1a;
+      --modal-border: #444;
+      --input-bg: #111;
+      --input-border: #333;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #444;
+      --btn-hover: #666;
+      --top-bar-bg: rgba(15,15,15,0.92);
+      --top-bar-border: #222;
+      --snapshot-bg: #1a1a1a;
+      --snapshot-border: #444;
+      --details-bg: #1a1a1a;
+      --details-border: #444;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+    }
+    body.light-theme {
+      --bg-color: #f0f0f0;
+      --text-color: #0f0f0f;
+      --card-bg: #fff;
+      --card-border: #ddd;
+      --pill-bg: #f5f5f5;
+      --pill-border: #ccc;
+      --link-color: #333;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #666;
+      --footer-color: #555;
+      --modal-bg: #fff;
+      --modal-border: #ddd;
+      --input-bg: #f5f5f5;
+      --input-border: #ccc;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #ddd;
+      --btn-hover: #ccc;
+      --top-bar-bg: rgba(240,240,240,0.92);
+      --top-bar-border: #ddd;
+      --snapshot-bg: #f5f5f5;
+      --snapshot-border: #ccc;
+      --details-bg: #f5f5f5;
+      --details-border: #ccc;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+    }
     body, html {
       margin: 0;
       padding: 0;
       min-height: 100vh;
       font-family: system-ui, sans-serif;
-      background: #0f0f0f;
-      color: white;
+      background: var(--bg-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
     }
@@ -26,9 +84,9 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.8rem 1.5rem;
-      background: rgba(15,15,15,0.92);
+      background: var(--top-bar-bg);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--top-bar-border);
       transition: all 0.3s ease;
     }
     .top-bar.scrolled {
@@ -36,7 +94,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
     .logo a {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
@@ -51,8 +109,8 @@
     }
     .logo a:hover { transform: scale(1.05); }
     .nav-pill {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--pill-bg);
+      border: 1px solid var(--pill-border);
       border-radius: 50px;
       padding: 0.4rem;
       display: flex;
@@ -60,7 +118,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     .nav-pill a {
-      color: #ddd;
+      color: var(--link-color);
       text-decoration: none;
       font-weight: 600;
       padding: 0.6rem 1.2rem;
@@ -69,7 +127,7 @@
       font-size: clamp(0.95rem, 2.5vw, 1.05rem);
     }
     .nav-pill a:hover, .nav-pill a:focus {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       transform: translateY(-1px);
     }
@@ -96,8 +154,8 @@
     .dashboard {
       width: 100%;
       max-width: 900px;
-      background: #111;
-      border: 1px solid #333;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 2rem;
       text-align: left;
@@ -111,10 +169,10 @@
       font-weight: 600;
     }
     .snapshot div {
-      background: #1a1a1a;
+      background: var(--snapshot-bg);
       padding: 1rem;
       border-radius: 8px;
-      border: 1px solid #444;
+      border: 1px solid var(--snapshot-border);
       width: 45%;
       text-align: center;
       white-space: nowrap;
@@ -123,8 +181,8 @@
     }
     /* Open details cards */
     .details-card {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--details-bg);
+      border: 1px solid var(--details-border);
       border-radius: 12px;
       padding: 1.4rem;
       margin-bottom: 1.2rem;
@@ -132,7 +190,7 @@
     .details-card h3 {
       margin: 0 0 0.8rem 0;
       font-size: 1.35rem;
-      color: #ED1C24;
+      color: var(--accent-color);
     }
     .details-grid {
       display: grid;
@@ -141,10 +199,10 @@
       font-size: 1.05rem;
     }
     .details-grid span {
-      color: #ccc;
+      color: var(--subtext-color);
     }
     .edit-btn {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       border: none;
       padding: 0.6rem 1.4rem;
@@ -154,7 +212,7 @@
       transition: all 0.2s ease;
     }
     .edit-btn:hover {
-      background: #c4171f;
+      background: var(--accent-hover);
       transform: translateY(-1px);
     }
     .logout-btn {
@@ -165,19 +223,19 @@
       padding: 1.6rem 2.8rem;
       font-size: 1.45rem;
       font-weight: 700;
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       border: none;
       border-radius: 14px;
       cursor: pointer;
       transition: all 0.25s ease;
-      box-shadow: 0 6px 20px rgba(237, 28, 36, 0.3);
+      box-shadow: 0 6px 20px var(--logout-shadow);
       text-align: center;
     }
     .logout-btn:hover {
-      background: #c4171f;
+      background: var(--accent-hover);
       transform: translateY(-3px);
-      box-shadow: 0 12px 35px rgba(237, 28, 36, 0.45);
+      box-shadow: 0 12px 35px var(--logout-shadow-hover);
     }
     /* New modal styles */
     .modal {
@@ -194,9 +252,12 @@
       justify-content: center;
       animation: fadeIn 0.3s ease;
     }
+    body.light-theme .modal {
+      background: rgba(255,255,255,0.85);
+    }
     .modal-content {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--modal-bg);
+      border: 1px solid var(--modal-border);
       border-radius: 16px;
       padding: 2rem;
       max-width: 500px;
@@ -213,9 +274,12 @@
       cursor: pointer;
       transition: color 0.2s;
     }
-    .close-btn:hover { color: #ED1C24; }
+    body.light-theme .close-btn {
+      color: #555;
+    }
+    .close-btn:hover { color: var(--accent-color); }
     .modal h3 {
-      color: #ED1C24;
+      color: var(--accent-color);
       margin-bottom: 1.5rem;
     }
     .modal form {
@@ -227,19 +291,19 @@
       display: flex;
       flex-direction: column;
       font-size: 1rem;
-      color: #ddd;
+      color: var(--link-color);
     }
     .modal input, .modal select {
-      background: #111;
-      border: 1px solid #333;
-      color: white;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-color);
       padding: 0.8rem;
       border-radius: 8px;
       font-size: 1rem;
       margin-top: 0.4rem;
     }
     .modal button[type="submit"] {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       border: none;
       padding: 1rem;
@@ -251,7 +315,7 @@
       position: relative;
     }
     .modal button[type="submit"]:hover {
-      background: #c4171f;
+      background: var(--accent-hover);
     }
     /* Spinner and success styles */
     @keyframes spin {
@@ -275,7 +339,7 @@
       animation: spin 1s linear infinite;
     }
     .modal button.success {
-      background: #28a745; /* Green for success */
+      background: var(--success); /* Green for success */
     }
     .modal button.success::before {
       content: '✓';
@@ -286,11 +350,11 @@
       font-size: 1.4rem;
     }
     .modal button.error {
-      background: #dc3545; /* Red for error */
+      background: var(--error); /* Red for error */
     }
     /* Address/Payment list styles */
     .address-item, .payment-item {
-      background: #111;
+      background: var(--input-bg);
       padding: 1rem;
       border-radius: 8px;
       margin-bottom: 1rem;
@@ -306,31 +370,31 @@
       gap: 0.5rem;
     }
     .address-item button, .payment-item button {
-      background: #444;
-      color: white;
+      background: var(--btn-bg);
+      color: var(--text-color);
       border: none;
       padding: 0.4rem 0.8rem;
       border-radius: 4px;
       cursor: pointer;
     }
     .address-item button:hover, .payment-item button:hover {
-      background: #666;
+      background: var(--btn-hover);
     }
     .address-item button.default, .payment-item button.default {
-      background: #28a745;
+      background: var(--success);
     }
     .address-item button.default:hover, .payment-item button.default:hover {
       background: #218838;
     }
     .address-item button.delete, .payment-item button.delete {
-      background: #dc3545;
+      background: var(--error);
     }
     .address-item button.delete:hover, .payment-item button.delete:hover {
       background: #c82333;
     }
     #cancelEdit, #cancelPaymentEdit {
-      background: #444;
-      color: white;
+      background: var(--btn-bg);
+      color: var(--text-color);
       border: none;
       padding: 1rem;
       border-radius: 8px;
@@ -339,7 +403,7 @@
       margin-top: 0.5rem;
     }
     #cancelEdit:hover, #cancelPaymentEdit:hover {
-      background: #666;
+      background: var(--btn-hover);
     }
     /* Security modal specific */
     .modal .toggle-label {
@@ -349,7 +413,7 @@
     }
     .modal .toggle-label span {
       font-size: 1rem;
-      color: #ddd;
+      color: var(--link-color);
     }
     .modal input[type="checkbox"] {
       width: 1.5rem;
@@ -368,7 +432,7 @@
       text-align: center;
       padding: 2rem 1rem;
       font-size: 0.9rem;
-      color: #aaa;
+      color: var(--footer-color);
       opacity: 0.7;
       margin-top: auto;
     }
@@ -378,9 +442,40 @@
       .details-grid { grid-template-columns: 1fr; }
       .logout-btn { max-width: 100%; }
     }
+    @media (prefers-color-scheme: light) {
+      body.system-theme {
+        --bg-color: #f0f0f0;
+        --text-color: #0f0f0f;
+        --card-bg: #fff;
+        --card-border: #ddd;
+        --pill-bg: #f5f5f5;
+        --pill-border: #ccc;
+        --link-color: #333;
+        --accent-color: #ED1C24;
+        --accent-hover: #c4171f;
+        --subtext-color: #666;
+        --footer-color: #555;
+        --modal-bg: #fff;
+        --modal-border: #ddd;
+        --input-bg: #f5f5f5;
+        --input-border: #ccc;
+        --success: #28a745;
+        --error: #dc3545;
+        --btn-bg: #ddd;
+        --btn-hover: #ccc;
+        --top-bar-bg: rgba(240,240,240,0.92);
+        --top-bar-border: #ddd;
+        --snapshot-bg: #f5f5f5;
+        --snapshot-border: #ccc;
+        --details-bg: #f5f5f5;
+        --details-border: #ccc;
+        --logout-shadow: rgba(237, 28, 36, 0.3);
+        --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      }
+    }
   </style>
 </head>
-<body>
+<body class="dark-theme"> <!-- Default to dark -->
   <div class="top-bar" id="topBar">
     <div class="logo">
       <a href="index.html">Peer Auto</a>
@@ -475,7 +570,7 @@
       <span class="close-btn" id="closeAddressModal">&times;</span>
       <h3>Manage Shipping Addresses</h3>
       <div id="addressList"></div>
-      <hr style="border-color: #444; margin: 1.5rem 0;">
+      <hr style="border-color: var(--modal-border); margin: 1.5rem 0;">
       <h4 id="addressFormTitle">Add New Address</h4>
       <form id="addressForm">
         <label>
@@ -505,7 +600,7 @@
       <span class="close-btn" id="closePaymentModal">&times;</span>
       <h3>Manage Payment Methods</h3>
       <div id="paymentList"></div>
-      <hr style="border-color: #444; margin: 1.5rem 0;">
+      <hr style="border-color: var(--modal-border); margin: 1.5rem 0;">
       <h4 id="paymentFormTitle">Add New Payment Method</h4>
       <form id="paymentForm">
         <label>
@@ -564,7 +659,7 @@
           </label>
           <button type="button" id="verifyReauthMfaCodeBtn">Verify Code</button>
         </div>
-        <hr style="border-color: #444; margin: 1.5rem 0;">
+        <hr style="border-color: var(--modal-border); margin: 1.5rem 0;">
         <h4>Two-Factor Authentication</h4>
         <p id="mfaStatus" style="font-size: 0.9rem; color: #aaa;">Status: <span id="mfaStatusText">Loading...</span></p>
         <div id="mfaEnrollSection">
@@ -727,6 +822,30 @@
       }
       $('#currentTheme').text(themeText);
     }
+    function applyTheme() {
+      const body = $('body');
+      body.removeClass('dark-theme light-theme system-theme');
+      if (preferences.theme === 'light') {
+        body.addClass('light-theme');
+      } else if (preferences.theme === 'system') {
+        body.addClass('system-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (prefersLight) {
+          body.addClass('light-theme');
+        } else {
+          body.addClass('dark-theme');
+        }
+      } else {
+        body.addClass('dark-theme');
+      }
+    }
+    // System theme listener
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+    mediaQuery.addEventListener('change', (e) => {
+      if (preferences.theme === 'system') {
+        applyTheme();
+      }
+    });
     function renderAddressList() {
       $('#addressList').empty();
       addresses.forEach((addr, idx) => {
@@ -734,7 +853,7 @@
         const addrDiv = $(`
           <div class="address-item">
             <div class="info">
-              ${formatAddress(addr)} ${isDefault ? '<span style="color: #28a745;">(Default)</span>' : ''}
+              ${formatAddress(addr)} ${isDefault ? '<span style="color: var(--success);">(Default)</span>' : ''}
             </div>
             <div class="actions">
               <button class="edit-addr">Edit</button>
@@ -779,7 +898,7 @@
         const payDiv = $(`
           <div class="payment-item">
             <div class="info">
-              ${formatPayment(pay)} ${isDefault ? '<span style="color: #28a745;">(Default)</span>' : ''}
+              ${formatPayment(pay)} ${isDefault ? '<span style="color: var(--success);">(Default)</span>' : ''}
             </div>
             <div class="actions">
               <button class="edit-pay">Edit</button>
@@ -859,6 +978,7 @@
             renderPrimaryAddress();
             renderPrimaryPayment();
             renderPreferences();
+            applyTheme(); // Apply loaded theme
             // Load real MFA status
             enrolledFactors = await multiFactor(user).enrolledFactors;
             renderMFAStatus();
@@ -1430,6 +1550,7 @@
             preferences.theme = newTheme;
             await savePreferences(user);
             renderPreferences();
+            applyTheme(); // Apply new theme immediately
             preferencesSubmitBtn.removeClass('loading').addClass('success').text('Saved');
             setTimeout(() => {
               preferencesModal.css('display', 'none');
