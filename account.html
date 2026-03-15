@@ -397,7 +397,7 @@
       <div class="dashboard">
         <h2>Account Overview</h2>
         <p id="welcomeMsg">Welcome back, Adam! Here's a quick snapshot of your activity.</p>
-      
+     
         <div class="snapshot">
           <div>Total Purchases: $0 (View details in <a href="buy.html" style="color: #ED1C24;">Buy Dashboard</a>)</div>
           <div>Total Sales: $0 (View details in <a href="sell.html" style="color: #ED1C24;">Sellers Dashboard</a>)</div>
@@ -557,6 +557,13 @@
           Confirm New Password
           <input type="password" id="confirmPassword" required minlength="6">
         </label>
+        <div id="reauthMfaCodeSection" style="display: none;">
+          <label>
+            Verification Code (sent to your phone)
+            <input type="text" id="reauthMfaVerificationCode" required maxlength="6">
+          </label>
+          <button type="button" id="verifyReauthMfaCodeBtn">Verify Code</button>
+        </div>
         <hr style="border-color: #444; margin: 1.5rem 0;">
         <h4>Two-Factor Authentication</h4>
         <p id="mfaStatus" style="font-size: 0.9rem; color: #aaa;">Status: <span id="mfaStatusText">Loading...</span></p>
@@ -588,9 +595,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier, sendEmailVerification, getMultiFactorResolver } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-   
+  
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
       authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -610,6 +617,8 @@
     let currentPaymentEditingIndex = -1;
     let verificationId = ''; // For MFA code verification
     let recaptchaVerifier; // For reCAPTCHA
+    let reauthResolver; // To store the resolver during reauth
+    let reauthVerificationId = ''; // Separate from enrollment verificationId
     function cleanPhone(phone) {
       return phone.replace(/\D/g, '');
     }
@@ -1149,6 +1158,7 @@
           alert('Verification code sent to your phone.');
         } catch (error) {
           console.error('Error sending MFA code:', error);
+          alert('MFA Error: ' + error.message + ' (Code: ' + error.code + ')');
           sendMfaCodeBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
           setTimeout(() => {
             sendMfaCodeBtn.removeClass('error').text('Send Verification Code').prop('disabled', false);
@@ -1180,6 +1190,7 @@
           recaptchaVerifier.clear();
         } catch (error) {
           console.error('Error enrolling MFA:', error);
+          alert('MFA Error: ' + error.message + ' (Code: ' + error.code + ')');
           verifyMfaCodeBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
           setTimeout(() => {
             verifyMfaCodeBtn.removeClass('error').text('Verify and Enroll').prop('disabled', false);
@@ -1204,6 +1215,7 @@
             }, 1500);
           } catch (error) {
             console.error('Error unenrolling MFA:', error);
+            alert('MFA Error: ' + error.message + ' (Code: ' + error.code + ')');
             unenrollMfaBtn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
             setTimeout(() => {
               unenrollMfaBtn.removeClass('error').text('Unenroll 2FA').prop('disabled', false);
@@ -1212,7 +1224,7 @@
         }
       });
       // Password Change Submit (MFA handled separately)
-      securityForm.on('submit', async (e) => {
+      securityForm.on('submit', async function(e) {
         e.preventDefault();
         const user = auth.currentUser;
         if (user) {
@@ -1229,30 +1241,92 @@
               return;
             }
             securitySubmitBtn.addClass('loading').text('Saving...').prop('disabled', true);
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
             try {
-              // Reauthenticate
-              const credential = EmailAuthProvider.credential(user.email, currentPassword);
               await reauthenticateWithCredential(user, credential);
-              // Update password
               await updatePassword(user, newPassword);
               securitySubmitBtn.removeClass('loading').addClass('success').text('Password Updated');
               setTimeout(() => {
                 securitySubmitBtn.removeClass('success').text('Save Password Changes').prop('disabled', false);
               }, 1500);
             } catch (error) {
-              console.error('Error updating password:', error.message);
-              let errorMsg = 'Failed: ' + error.code;
-              if (error.code === 'auth/wrong-password') {
-                errorMsg = 'Incorrect current password.';
-              } else if (error.code === 'auth/requires-recent-login') {
-                errorMsg = 'Please log out and log back in to change password.';
+              console.error('Error during reauth/password update:', error);
+              if (error.code === 'auth/multi-factor-auth-required') {
+                reauthResolver = getMultiFactorResolver(auth, error);
+                // Assume phone MFA (first hint); extend for multiple if needed
+                if (reauthResolver.hints.length > 0 && reauthResolver.hints[0].factorId === PhoneMultiFactorGenerator.FACTOR_ID) {
+                  const phoneInfoOptions = {
+                    multiFactorHint: reauthResolver.hints[0],
+                    session: reauthResolver.session
+                  };
+                  const phoneAuthProvider = new PhoneAuthProvider(auth);
+                  try {
+                    reauthVerificationId = await phoneAuthProvider.verifyPhoneNumber(phoneInfoOptions, recaptchaVerifier);
+                    // Hide password fields, show reauth MFA section
+                    $('label[for="currentPassword"], label[for="newPassword"], label[for="confirmPassword"]').hide();
+                    $('#reauthMfaCodeSection').show();
+                    alert('Verification code sent to your enrolled phone for reauthentication.');
+                    securitySubmitBtn.removeClass('loading').text('Save Password Changes').prop('disabled', false); // Reset btn for now
+                  } catch (sendError) {
+                    console.error('Error sending reauth MFA code:', sendError);
+                    alert('Failed to send verification code: ' + sendError.message);
+                    securitySubmitBtn.removeClass('loading').addClass('error').text('Failed: ' + sendError.code);
+                    setTimeout(() => {
+                      securitySubmitBtn.removeClass('error').text('Save Password Changes').prop('disabled', false);
+                    }, 3000);
+                  }
+                } else {
+                  alert('Unsupported MFA factor or no factors enrolled.');
+                  securitySubmitBtn.removeClass('loading').addClass('error').text('Unsupported MFA');
+                  setTimeout(() => {
+                    securitySubmitBtn.removeClass('error').text('Save Password Changes').prop('disabled', false);
+                  }, 3000);
+                }
+              } else {
+                let errorMsg = 'Failed: ' + error.code;
+                if (error.code === 'auth/wrong-password') {
+                  errorMsg = 'Incorrect current password.';
+                } else if (error.code === 'auth/requires-recent-login') {
+                  errorMsg = 'Please log out and log back in to change password.';
+                }
+                securitySubmitBtn.removeClass('loading').addClass('error').text(errorMsg);
+                setTimeout(() => {
+                  securitySubmitBtn.removeClass('error').text('Save Password Changes').prop('disabled', false);
+                }, 3000);
               }
-              securitySubmitBtn.removeClass('loading').addClass('error').text(errorMsg);
-              setTimeout(() => {
-                securitySubmitBtn.removeClass('error').text('Save Password Changes').prop('disabled', false);
-              }, 3000);
             }
           }
+        }
+      });
+      $('#verifyReauthMfaCodeBtn').on('click', async function() {
+        const code = $('#reauthMfaVerificationCode').val().trim();
+        if (!code || code.length !== 6) {
+          alert('Enter the 6-digit code.');
+          return;
+        }
+        const btn = $(this);
+        btn.addClass('loading').text('Verifying...').prop('disabled', true);
+        try {
+          const cred = PhoneAuthProvider.credential(reauthVerificationId, code);
+          const multiFactorAssertion = PhoneMultiFactorGenerator.assertion(cred);
+          await reauthResolver.resolveSignIn(multiFactorAssertion);
+          // Reauth complete; now update password
+          const newPassword = $('#newPassword').val(); // Grab from hidden field
+          await updatePassword(auth.currentUser, newPassword);
+          btn.removeClass('loading').addClass('success').text('Updated');
+          setTimeout(() => {
+            $('#reauthMfaCodeSection').hide();
+            $('label[for="currentPassword"], label[for="newPassword"], label[for="confirmPassword"]').show(); // Restore if needed
+            btn.removeClass('success').text('Verify Code').prop('disabled', false);
+            securityModal.css('display', 'none'); // Or just success close
+          }, 1500);
+        } catch (error) {
+          console.error('Error verifying reauth MFA:', error);
+          alert('Verification failed: ' + error.message);
+          btn.removeClass('loading').addClass('error').text('Failed: ' + error.code);
+          setTimeout(() => {
+            btn.removeClass('error').text('Verify Code').prop('disabled', false);
+          }, 3000);
         }
       });
       // Placeholder for other edit buttons
