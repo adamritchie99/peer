@@ -668,12 +668,12 @@
         body.addClass('system-theme');
         const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
         if (prefersLight) {
-          body.addClass('light-theme');
+          body.classList.add('light-theme');
         } else {
-          body.addClass('dark-theme');
+          body.classList.add('dark-theme');
         }
       } else {
-        body.addClass('dark-theme');
+        body.classList.add('dark-theme');
       }
       body.css('visibility', 'visible'); // Ensure visible after async apply
     }
@@ -762,8 +762,6 @@
           let html = '';
           if (snap.empty) {
             html = '<p>No messages yet.</p>';
-          } else if (snap.docs.every(doc => (doc.data().unreadCountForUser?.[userId] || 0) === 0)) {
-            html = '<p>No new messages. All conversations are up to date.</p>';
           } else {
             for (const threadDoc of snap.docs) {
               const thread = threadDoc.data();
@@ -785,6 +783,7 @@
                 </div>
               `;
             }
+            if (!html) html = '<p>No new messages. All conversations are up to date.</p>';
           }
           contentElement.html(html);
 
@@ -897,7 +896,7 @@
       if (brand) {
         brand.models.forEach(model => {
           modelSelect.append(`<option value="${model}">${model}</option>`);
-        }
+        });
       }
     }
     async function createListing(userId, year, make, model, title, description, price, images) {
