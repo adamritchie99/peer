@@ -344,20 +344,20 @@
         <!-- Stats -->
         <div class="stats">
           <div class="stat-card">
-            <h3>27</h3>
+            <h3>0</h3>
             <p>Active Listings</p>
           </div>
           <div class="stat-card earnings">
-            <h3>$4,920</h3>
+            <h3>$0</h3>
             <p>Earned This Month</p>
-            <p class="ytd">Year to Date: $28,750</p>
+            <p class="ytd">Year to Date: $0</p>
           </div>
           <div class="stat-card">
-            <h3>8</h3>
+            <h3>0</h3>
             <p>Orders to Ship</p>
           </div>
           <div class="stat-card">
-            <h3>14</h3>
+            <h3>0</h3>
             <p>New Messages</p>
           </div>
         </div>
@@ -430,8 +430,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, onSnapshot, orderBy, limit, Timestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
       authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -444,9 +443,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
     let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default preferences
-
     function applyTheme() {
       const body = $('body');
       body.removeClass('dark-theme light-theme system-theme');
@@ -465,7 +462,6 @@
       }
       body.css('visibility', 'visible'); // Ensure visible after async apply
     }
-
     // System theme listener
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
     mediaQuery.addEventListener('change', (e) => {
@@ -473,7 +469,98 @@
         applyTheme();
       }
     });
+    async function loadDashboardStats(user) {
+      const userId = user.uid;
+      try {
+        // Active Listings
+        const listingsQuery = query(
+          collection(db, 'listings'),
+          where('userId', '==', userId),
+          where('status', '==', 'active')
+        );
+        onSnapshot(listingsQuery, (snap) => {
+          $('.stat-card:nth-child(1) h3').text(snap.size);
+        });
 
+        // Earnings from listings
+        const now = new Date();
+        const monthStart = Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), 1));
+        const yearStart = Timestamp.fromDate(new Date(now.getFullYear(), 0, 1));
+
+        const monthlyListingsQuery = query(
+          collection(db, 'listings'),
+          where('userId', '==', userId),
+          where('status', '==', 'sold'),
+          where('soldAt', '>=', monthStart)
+        );
+        onSnapshot(monthlyListingsQuery, (snap) => {
+          let monthlyEarned = 0;
+          snap.forEach((doc) => { monthlyEarned += doc.data().price || 0; });
+          $('.stat-card.earnings h3').text(`$${monthlyEarned.toLocaleString()}`);
+        });
+
+        const ytdListingsQuery = query(
+          collection(db, 'listings'),
+          where('userId', '==', userId),
+          where('status', '==', 'sold'),
+          where('soldAt', '>=', yearStart)
+        );
+        onSnapshot(ytdListingsQuery, (snap) => {
+          let ytdEarned = 0;
+          snap.forEach((doc) => { ytdEarned += doc.data().price || 0; });
+          $('.stat-card.earnings .ytd').text(`Year to Date: $${ytdEarned.toLocaleString()}`);
+        });
+
+        // Orders to Ship - assuming listings with status 'sold' but not 'shipped' (add 'shipped: false' field in DB)
+        const ordersQuery = query(
+          collection(db, 'listings'),
+          where('userId', '==', userId),
+          where('status', '==', 'sold'),
+          where('shipped', '==', false)
+        );
+        onSnapshot(ordersQuery, (snap) => {
+          $('.stat-card:nth-child(3) h3').text(snap.size);
+        });
+
+        // New Messages
+        const messagesQuery = query(
+          collection(db, 'messages'),
+          where('receiverId', '==', userId),
+          where('isRead', '==', false),
+          orderBy('timestamp', 'desc')
+        );
+        onSnapshot(messagesQuery, (snap) => {
+          $('.stat-card:nth-child(4) h3').text(snap.size);
+        });
+      } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+      }
+    }
+    async function loadMessages(userId, contentElement) {
+      try {
+        const messagesQuery = query(
+          collection(db, 'messages'),
+          where('receiverId', '==', userId),
+          orderBy('timestamp', 'desc'),
+          limit(10)
+        );
+        const messagesSnapshot = await getDocs(messagesQuery);
+        let html = '<ul>';
+        if (messagesSnapshot.empty) {
+          html += '<li>No messages yet.</li>';
+        } else {
+          messagesSnapshot.forEach((doc) => {
+            const data = doc.data();
+            html += `<li>From ${data.senderId}: ${data.text} at ${data.timestamp?.toDate().toLocaleString() || 'N/A'}</li>`;
+          });
+        }
+        html += '</ul>';
+        contentElement.html(html);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        contentElement.html('<p>Error loading messages.</p>');
+      }
+    }
     $(document).ready(function() {
       setTimeout(() => {
         $('#sellSection').addClass('visible');
@@ -493,12 +580,13 @@
             if (userDoc.exists()) {
               const data = userDoc.data();
               preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
-              localStorage.setItem('preferences', JSON.stringify(preferences)); // Update cache if changed
+              localStorage.setItem('preferences', JSON.stringify(preferences));
             }
           } catch (error) {
             console.error('Error loading preferences:', error.message);
           }
           applyTheme();
+          loadDashboardStats(user);
         } else {
           window.location.href = 'login.html';
         }
@@ -508,6 +596,11 @@
         acc.toggleClass('active');
         const icon = $(this).find('.accordion-icon');
         icon.text(acc.hasClass('active') ? '-' : '+');
+        const headerText = $(this).find('span:first').text().trim();
+        if (headerText === 'Messages' && acc.hasClass('active')) {
+          const content = $(this).next('.accordion-content');
+          loadMessages(auth.currentUser?.uid, content);
+        }
       });
       $('#create-listing-btn').on('click', function() {
         alert('Opening new listing form — vehicle selector will be here soon!');
