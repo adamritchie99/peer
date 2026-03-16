@@ -413,6 +413,25 @@
       0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
       100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     }
+    /* Messaging Styles */
+    .message-thread {
+      border-bottom: 1px solid var(--input-border);
+      padding: 0.5rem 0;
+    }
+    .message-thread:last-child {
+      border-bottom: none;
+    }
+    .message-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .message-input textarea {
+      flex: 1;
+    }
+    .message-input button {
+      padding: 0.5rem 1rem;
+    }
     @media (max-width: 700px) {
       .stats { flex-direction: column; }
       .stat-card { min-width: 100%; }
@@ -525,8 +544,8 @@
             <span>Messages</span>
             <span class="accordion-icon">+</span>
           </div>
-          <div class="accordion-content">
-            <p>Direct chats with buyers asking about your parts.</p>
+          <div class="accordion-content" id="messages-content">
+            <p>Loading messages...</p>
           </div>
         </div>
         <div class="accordion">
@@ -604,6 +623,17 @@
       </form>
     </div>
   </div>
+  <!-- Message Reply Modal -->
+  <div class="modal-overlay" id="reply-modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-reply-modal">&times;</span>
+      <h2>Reply to Message</h2>
+      <form id="reply-form">
+        <textarea id="reply-text" placeholder="Type your reply..." required></textarea>
+        <button type="submit">Send Reply</button>
+      </form>
+    </div>
+  </div>
   <footer>
     Designed by humans on Earth — specifically Detroit, Michigan. (AI helped with the coffee.)
   </footer>
@@ -611,7 +641,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, onSnapshot, orderBy, limit, Timestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, onSnapshot, orderBy, limit, Timestamp, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
@@ -707,14 +737,13 @@
           $('.stat-card:nth-child(3) h3').text(snap.size);
         });
 
-        // New Messages
-        const messagesQuery = query(
+        // New Messages - Count unread
+        const unreadQuery = query(
           collection(db, 'messages'),
           where('receiverId', '==', userId),
-          where('isRead', '==', false),
-          orderBy('timestamp', 'desc')
+          where('isRead', '==', false)
         );
-        onSnapshot(messagesQuery, (snap) => {
+        onSnapshot(unreadQuery, (snap) => {
           $('.stat-card:nth-child(4) h3').text(snap.size);
         });
       } catch (error) {
@@ -722,29 +751,116 @@
       }
     }
     async function loadMessages(userId, contentElement) {
+      contentElement.html('<p>Loading messages...</p>');
       try {
-        const messagesQuery = query(
-          collection(db, 'messages'),
-          where('receiverId', '==', userId),
-          orderBy('timestamp', 'desc'),
-          limit(10)
+        const threadsQuery = query(
+          collection(db, 'threads'),
+          where('participants', 'array-contains', userId),
+          orderBy('lastMessageAt', 'desc')
         );
-        const messagesSnapshot = await getDocs(messagesQuery);
-        let html = '<ul>';
-        if (messagesSnapshot.empty) {
-          html += '<li>No messages yet.</li>';
-        } else {
-          messagesSnapshot.forEach((doc) => {
-            const data = doc.data();
-            html += `<li>From ${data.senderId}: ${data.text} at ${data.timestamp?.toDate().toLocaleString() || 'N/A'}</li>`;
+        onSnapshot(threadsQuery, async (snap) => {
+          let html = '';
+          if (snap.empty) {
+            html = '<p>No messages yet.</p>';
+          } else {
+            for (const threadDoc of snap.docs) {
+              const thread = threadDoc.data();
+              const threadId = threadDoc.id;
+              const otherUserId = thread.participants.find(id => id !== userId);
+              const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
+              const otherUserName = otherUserDoc.exists() ? otherUserDoc.data().displayName || 'User' : 'Unknown';
+              const unreadCount = thread.unreadCountForUser?.[userId] || 0;
+              html += `
+                <div class="message-thread" data-thread-id="${threadId}">
+                  <p><strong>${otherUserName}</strong> (Unread: ${unreadCount})</p>
+                  <p>Last: ${thread.lastMessageText || ''} at ${thread.lastMessageAt?.toDate().toLocaleString() || 'N/A'}</p>
+                  <button class="view-thread-btn">View Conversation</button>
+                  <div class="thread-messages" style="display: none;"></div>
+                  <div class="message-input" style="display: none;">
+                    <textarea placeholder="Type your reply..."></textarea>
+                    <button class="send-reply-btn">Send</button>
+                  </div>
+                </div>
+              `;
+            }
+          }
+          contentElement.html(html);
+
+          // Handle view thread
+          $('.view-thread-btn').on('click', function() {
+            const threadElem = $(this).parent();
+            const threadId = threadElem.data('thread-id');
+            const messagesDiv = threadElem.find('.thread-messages');
+            const inputDiv = threadElem.find('.message-input');
+            messagesDiv.toggle();
+            inputDiv.toggle();
+            if (messagesDiv.is(':visible')) {
+              loadThreadMessages(threadId, messagesDiv, userId);
+            }
           });
-        }
-        html += '</ul>';
-        contentElement.html(html);
+
+          // Handle send reply
+          $('.send-reply-btn').on('click', async function() {
+            const threadElem = $(this).closest('.message-thread');
+            const threadId = threadElem.data('thread-id');
+            const replyText = threadElem.find('textarea').val().trim();
+            if (replyText) {
+              await sendMessage(threadId, userId, replyText);
+              threadElem.find('textarea').val('');
+            }
+          });
+        });
       } catch (error) {
         console.error('Error loading messages:', error);
         contentElement.html('<p>Error loading messages.</p>');
       }
+    }
+    async function loadThreadMessages(threadId, container, userId) {
+      container.html('<p>Loading conversation...</p>');
+      const messagesQuery = query(
+        collection(db, 'messages'),
+        where('threadId', '==', threadId),
+        orderBy('timestamp', 'asc')
+      );
+      onSnapshot(messagesQuery, async (snap) => {
+        let html = '<ul>';
+        for (const msgDoc of snap.docs) {
+          const msg = msgDoc.data();
+          const senderDoc = await getDoc(doc(db, 'users', msg.senderId));
+          const senderName = senderDoc.exists() ? senderDoc.data().displayName || 'User' : 'Unknown';
+          html += `<li><strong>${senderName}:</strong> ${msg.text} <em>at ${msg.timestamp.toDate().toLocaleString()}</em></li>`;
+          if (!msg.isRead && msg.receiverId === userId) {
+            await updateDoc(msgDoc.ref, { isRead: true });
+            // Update unread count in thread
+            const threadRef = doc(db, 'threads', threadId);
+            await updateDoc(threadRef, { [`unreadCountForUser.${userId}`]: 0 });
+          }
+        }
+        html += '</ul>';
+        container.html(html);
+      });
+    }
+    async function sendMessage(threadId, senderId, text) {
+      const threadRef = doc(db, 'threads', threadId);
+      const threadDoc = await getDoc(threadRef);
+      if (!threadDoc.exists()) return;
+      const thread = threadDoc.data();
+      const receiverId = thread.participants.find(id => id !== senderId);
+
+      await addDoc(collection(db, 'messages'), {
+        threadId,
+        senderId,
+        receiverId,
+        text,
+        timestamp: Timestamp.now(),
+        isRead: false
+      });
+
+      await updateDoc(threadRef, {
+        lastMessageText: text,
+        lastMessageAt: Timestamp.now(),
+        [`unreadCountForUser.${receiverId}`]: (thread.unreadCountForUser?.[receiverId] || 0) + 1
+      });
     }
     async function fetchVehicleData() {
       try {
@@ -852,7 +968,7 @@
           loadMessages(auth.currentUser?.uid, content);
         }
       });
-      // Modal handling
+      // Modal handling for create listing
       const modal = $('#create-modal');
       const closeBtn = $('#close-modal');
       const createBtn = $('#create-listing-btn');
@@ -872,7 +988,7 @@
         form.trigger('reset');
         preview.empty();
         modelSelect.empty().append('<option value="">Select Model</option>');
-        submitBtn.removeClass('loading success').text('Post Listing');
+        submitBtn.removeClass('success').text('Post Listing').prop('disabled', false);
       });
 
       modal.on('click', function(e) {
@@ -881,7 +997,7 @@
           form.trigger('reset');
           preview.empty();
           modelSelect.empty().append('<option value="">Select Model</option>');
-          submitBtn.removeClass('loading success').text('Post Listing');
+          submitBtn.removeClass('success').text('Post Listing').prop('disabled', false);
         }
       });
 
