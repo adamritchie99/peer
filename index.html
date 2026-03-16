@@ -89,6 +89,7 @@
       color: var(--text-color);
       display: flex;
       flex-direction: column;
+      visibility: hidden; /* Hide until theme applied */
     }
     main { flex: 1; }
     /* Top bar - slightly tighter */
@@ -358,6 +359,29 @@
   </style>
 </head>
 <body class="dark-theme">
+  <script>
+    // Sync theme from localStorage BEFORE main script
+    (function() {
+      const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+      const theme = savedPrefs.theme || 'dark';
+      const body = document.body;
+      body.classList.remove('dark-theme', 'light-theme', 'system-theme');
+      if (theme === 'light') {
+        body.classList.add('light-theme');
+      } else if (theme === 'system') {
+        body.classList.add('system-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (prefersLight) {
+          body.classList.add('light-theme');
+        } else {
+          body.classList.add('dark-theme');
+        }
+      } else {
+        body.classList.add('dark-theme');
+      }
+      body.style.visibility = 'visible'; // Show now
+    })();
+  </script>
   <div class="top-bar" id="topBar">
     <div class="logo">
       <a href="#" id="home-reset" onclick="return false;">Peer Auto</a>
@@ -452,6 +476,7 @@
       } else {
         body.addClass('dark-theme');
       }
+      body.css('visibility', 'visible'); // Ensure visible after async apply
     }
 
     // System theme listener
@@ -483,6 +508,7 @@
             if (userDoc.exists()) {
               const data = userDoc.data();
               preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
+              localStorage.setItem('preferences', JSON.stringify(preferences)); // Update cache if changed
             }
           } catch (error) {
             console.error('Error loading preferences:', error.message);
