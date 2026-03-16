@@ -304,7 +304,7 @@
       flex-direction: column;
       gap: 1rem;
     }
-    .modal-content input, .modal-content textarea {
+    .modal-content select, .modal-content input, .modal-content textarea {
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       color: var(--text-color);
@@ -540,11 +540,17 @@
       <span class="close-btn" id="close-modal">&times;</span>
       <h2>Create New Listing</h2>
       <form id="listing-form">
-        <input type="number" id="year" placeholder="Year (e.g., 2020)" min="1900" max="2026" required>
-        <input type="text" id="make" placeholder="Make (e.g., Ford)" required>
-        <input type="text" id="model" placeholder="Model (e.g., Mustang)" required>
-        <input type="text" id="title" placeholder="Title (e.g., Engine Part for Ford Mustang)" required>
-        <textarea id="description" placeholder="Description (like an Instagram caption: details, condition, why selling)" required></textarea>
+        <select id="year" required>
+          <option value="">Select Year</option>
+        </select>
+        <select id="make" required>
+          <option value="">Select Make</option>
+        </select>
+        <select id="model" required>
+          <option value="">Select Model</option>
+        </select>
+        <input type="text" id="title" placeholder="Title (e.g., Engine Part)" required>
+        <textarea id="description" placeholder="Description (details, condition, why selling)" required></textarea>
         <input type="number" id="price" placeholder="Price (USD)" min="0" step="0.01" required>
         <div class="file-upload">
           <label for="images">Upload Images (up to 4)</label>
@@ -578,6 +584,8 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
     let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default preferences
+    let vehicleData = []; // To store makes and models
+
     function applyTheme() {
       const body = $('body');
       body.removeClass('dark-theme light-theme system-theme');
@@ -645,7 +653,7 @@
           $('.stat-card.earnings .ytd').text(`Year to Date: $${ytdEarned.toLocaleString()}`);
         });
 
-        // Orders to Ship - assuming listings with status 'sold' but not 'shipped' (add 'shipped: false' field in DB if needed)
+        // Orders to Ship
         const ordersQuery = query(
           collection(db, 'listings'),
           where('userId', '==', userId),
@@ -695,6 +703,38 @@
         contentElement.html('<p>Error loading messages.</p>');
       }
     }
+    async function fetchVehicleData() {
+      try {
+        const response = await fetch('https://raw.githubusercontent.com/matthlavacka/car-list/master/car-list.json');
+        vehicleData = await response.json();
+      } catch (error) {
+        console.error('Error fetching vehicle data:', error);
+        alert('Failed to load vehicle data. Using manual input.');
+      }
+    }
+    function populateYears() {
+      const yearSelect = $('#year');
+      const currentYear = new Date().getFullYear() + 1; // Up to next year
+      for (let y = currentYear; y >= 1900; y--) {
+        yearSelect.append(`<option value="${y}">${y}</option>`);
+      }
+    }
+    function populateMakes() {
+      const makeSelect = $('#make');
+      vehicleData.forEach(brand => {
+        makeSelect.append(`<option value="${brand.brand}">${brand.brand}</option>`);
+      });
+    }
+    function populateModels(selectedMake) {
+      const modelSelect = $('#model');
+      modelSelect.empty().append('<option value="">Select Model</option>');
+      const brand = vehicleData.find(b => b.brand === selectedMake);
+      if (brand) {
+        brand.models.forEach(model => {
+          modelSelect.append(`<option value="${model}">${model}</option>`);
+        });
+      }
+    }
     async function createListing(userId, year, make, model, title, description, price, images) {
       try {
         const imageUrls = [];
@@ -724,7 +764,11 @@
         alert('Error creating listing. Please try again.');
       }
     }
-    $(document).ready(function() {
+    $(document).ready(async function() {
+      await fetchVehicleData();
+      populateYears();
+      populateMakes();
+
       setTimeout(() => {
         $('#sellSection').addClass('visible');
       }, 300);
@@ -772,6 +816,8 @@
       const form = $('#listing-form');
       const imageInput = $('#images');
       const preview = $('#image-preview');
+      const makeSelect = $('#make');
+      const modelSelect = $('#model');
 
       createBtn.on('click', function() {
         modal.addClass('active');
@@ -781,6 +827,7 @@
         modal.removeClass('active');
         form.trigger('reset');
         preview.empty();
+        modelSelect.empty().append('<option value="">Select Model</option>');
       });
 
       modal.on('click', function(e) {
@@ -788,6 +835,16 @@
           modal.removeClass('active');
           form.trigger('reset');
           preview.empty();
+          modelSelect.empty().append('<option value="">Select Model</option>');
+        }
+      });
+
+      makeSelect.on('change', function() {
+        const selectedMake = $(this).val();
+        if (selectedMake) {
+          populateModels(selectedMake);
+        } else {
+          modelSelect.empty().append('<option value="">Select Model</option>');
         }
       });
 
@@ -809,9 +866,9 @@
         e.preventDefault();
         const user = auth.currentUser;
         if (!user) return alert('Please log in.');
-        const year = $('#year').val().trim();
-        const make = $('#make').val().trim();
-        const model = $('#model').val().trim();
+        const year = $('#year').val();
+        const make = $('#make').val();
+        const model = $('#model').val();
         const title = $('#title').val().trim();
         const description = $('#description').val().trim();
         const price = $('#price').val().trim();
@@ -821,6 +878,7 @@
         modal.removeClass('active');
         form.trigger('reset');
         preview.empty();
+        modelSelect.empty().append('<option value="">Select Model</option>');
       });
     });
   </script>
