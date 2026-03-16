@@ -73,6 +73,7 @@
       color: var(--text-color);
       display: flex;
       flex-direction: column;
+      visibility: hidden; /* Hide until theme applied */
     }
     main { flex: 1; }
     /* Top bar */
@@ -476,6 +477,29 @@
   </style>
 </head>
 <body class="dark-theme"> <!-- Default to dark -->
+  <script>
+    // Sync theme from localStorage BEFORE main script
+    (function() {
+      const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+      const theme = savedPrefs.theme || 'dark';
+      const body = document.body;
+      body.classList.remove('dark-theme', 'light-theme', 'system-theme');
+      if (theme === 'light') {
+        body.classList.add('light-theme');
+      } else if (theme === 'system') {
+        body.classList.add('system-theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        if (prefersLight) {
+          body.classList.add('light-theme');
+        } else {
+          body.classList.add('dark-theme');
+        }
+      } else {
+        body.classList.add('dark-theme');
+      }
+      body.style.visibility = 'visible'; // Show now
+    })();
+  </script>
   <div class="top-bar" id="topBar">
     <div class="logo">
       <a href="index.html">Peer Auto</a>
@@ -775,6 +799,7 @@
     async function savePreferences(user) {
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { preferences }, { merge: true });
+      localStorage.setItem('preferences', JSON.stringify(preferences)); // Cache locally
     }
     function renderPrimaryAddress() {
       const primary = addresses.find(a => a.isDefault) || addresses[0] || null;
@@ -838,6 +863,7 @@
       } else {
         body.addClass('dark-theme');
       }
+      body.css('visibility', 'visible'); // Ensure visible after async apply (redundant but safe)
     }
     // System theme listener
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -979,6 +1005,7 @@
             renderPrimaryPayment();
             renderPreferences();
             applyTheme(); // Apply loaded theme
+            localStorage.setItem('preferences', JSON.stringify(preferences)); // Update cache if changed
             // Load real MFA status
             enrolledFactors = await multiFactor(user).enrolledFactors;
             renderMFAStatus();
