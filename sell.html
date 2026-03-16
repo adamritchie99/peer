@@ -762,6 +762,8 @@
           let html = '';
           if (snap.empty) {
             html = '<p>No messages yet.</p>';
+          } else if (snap.docs.every(doc => (doc.data().unreadCountForUser?.[userId] || 0) === 0)) {
+            html = '<p>No new messages. All conversations are up to date.</p>';
           } else {
             for (const threadDoc of snap.docs) {
               const thread = threadDoc.data();
@@ -824,16 +826,20 @@
       );
       onSnapshot(messagesQuery, async (snap) => {
         let html = '<ul>';
-        for (const msgDoc of snap.docs) {
-          const msg = msgDoc.data();
-          const senderDoc = await getDoc(doc(db, 'users', msg.senderId));
-          const senderName = senderDoc.exists() ? senderDoc.data().displayName || 'User' : 'Unknown';
-          html += `<li><strong>${senderName}:</strong> ${msg.text} <em>at ${msg.timestamp.toDate().toLocaleString()}</em></li>`;
-          if (!msg.isRead && msg.receiverId === userId) {
-            await updateDoc(msgDoc.ref, { isRead: true });
-            // Update unread count in thread
-            const threadRef = doc(db, 'threads', threadId);
-            await updateDoc(threadRef, { [`unreadCountForUser.${userId}`]: 0 });
+        if (snap.empty) {
+          html += '<li>No messages in this conversation yet.</li>';
+        } else {
+          for (const msgDoc of snap.docs) {
+            const msg = msgDoc.data();
+            const senderDoc = await getDoc(doc(db, 'users', msg.senderId));
+            const senderName = senderDoc.exists() ? senderDoc.data().displayName || 'User' : 'Unknown';
+            html += `<li><strong>${senderName}:</strong> ${msg.text} <em>at ${msg.timestamp.toDate().toLocaleString()}</em></li>`;
+            if (!msg.isRead && msg.receiverId === userId) {
+              await updateDoc(msgDoc.ref, { isRead: true });
+              // Update unread count in thread
+              const threadRef = doc(db, 'threads', threadId);
+              await updateDoc(threadRef, { [`unreadCountForUser.${userId}`]: 0 });
+            }
           }
         }
         html += '</ul>';
@@ -891,7 +897,7 @@
       if (brand) {
         brand.models.forEach(model => {
           modelSelect.append(`<option value="${model}">${model}</option>`);
-        });
+        }
       }
     }
     async function createListing(userId, year, make, model, title, description, price, images) {
