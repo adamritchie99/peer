@@ -540,6 +540,9 @@
       <span class="close-btn" id="close-modal">&times;</span>
       <h2>Create New Listing</h2>
       <form id="listing-form">
+        <input type="number" id="year" placeholder="Year (e.g., 2020)" min="1900" max="2026" required>
+        <input type="text" id="make" placeholder="Make (e.g., Ford)" required>
+        <input type="text" id="model" placeholder="Model (e.g., Mustang)" required>
         <input type="text" id="title" placeholder="Title (e.g., Engine Part for Ford Mustang)" required>
         <textarea id="description" placeholder="Description (like an Instagram caption: details, condition, why selling)" required></textarea>
         <input type="number" id="price" placeholder="Price (USD)" min="0" step="0.01" required>
@@ -692,7 +695,7 @@
         contentElement.html('<p>Error loading messages.</p>');
       }
     }
-    async function createListing(userId, title, description, price, images) {
+    async function createListing(userId, year, make, model, title, description, price, images) {
       try {
         const imageUrls = [];
         for (const file of images) {
@@ -704,6 +707,9 @@
 
         await addDoc(collection(db, 'listings'), {
           userId,
+          year: parseInt(year),
+          make,
+          model,
           title,
           description,
           price: parseFloat(price),
@@ -803,12 +809,15 @@
         e.preventDefault();
         const user = auth.currentUser;
         if (!user) return alert('Please log in.');
+        const year = $('#year').val().trim();
+        const make = $('#make').val().trim();
+        const model = $('#model').val().trim();
         const title = $('#title').val().trim();
         const description = $('#description').val().trim();
         const price = $('#price').val().trim();
         const images = imageInput[0].files;
-        if (!title || !description || !price) return alert('Please fill all fields.');
-        await createListing(user.uid, title, description, price, images);
+        if (!year || !make || !model || !title || !description || !price) return alert('Please fill all fields.');
+        await createListing(user.uid, year, make, model, title, description, price, images);
         modal.removeClass('active');
         form.trigger('reset');
         preview.empty();
