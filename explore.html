@@ -365,7 +365,7 @@
         }
     </style>
 </head>
-<body class="dark-theme">
+<body class="system-theme">
   <script>
     // Sync theme from localStorage BEFORE main script
     (function() {
@@ -473,17 +473,17 @@
             const body = $('body');
             body.removeClass('dark-theme light-theme system-theme');
             if (preferences.theme === 'light') {
-                body.classList.add('light-theme');
+                body.addClass('light-theme');
             } else if (preferences.theme === 'system') {
-                body.classList.add('system-theme');
+                body.addClass('system-theme');
                 const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
                 if (prefersLight) {
-                    body.classList.add('light-theme');
+                    body.addClass('light-theme');
                 } else {
-                    body.classList.add('dark-theme');
+                    body.addClass('dark-theme');
                 }
             } else {
-                body.classList.add('dark-theme');
+                body.addClass('dark-theme');
             }
             body.css('visibility', 'visible'); // Ensure visible after async apply
         }
@@ -520,6 +520,11 @@
                     } catch (error) {
                         console.error('Error loading preferences:', error.message);
                     }
+                } else {
+                    // On logout (or logged-out state), force system theme
+                    preferences.theme = 'system';
+                    localStorage.setItem('preferences', JSON.stringify(preferences));
+                    applyTheme();
                 }
                 applyTheme(); // Apply theme whether logged in or not
             });
