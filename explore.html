@@ -369,24 +369,29 @@
   <script>
     // Sync theme from localStorage BEFORE main script
     (function() {
-      const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
-      const theme = savedPrefs.theme || 'dark';
-      const body = document.body;
-      body.classList.remove('dark-theme', 'light-theme', 'system-theme');
-      if (theme === 'light') {
-        body.classList.add('light-theme');
-      } else if (theme === 'system') {
-        body.classList.add('system-theme');
-        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        if (prefersLight) {
+      try {
+        const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+        const theme = savedPrefs.theme || 'system';
+        const body = document.body;
+        body.classList.remove('dark-theme', 'light-theme', 'system-theme');
+        if (theme === 'light') {
           body.classList.add('light-theme');
+        } else if (theme === 'system') {
+          body.classList.add('system-theme');
+          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+          if (prefersLight) {
+            body.classList.add('light-theme');
+          } else {
+            body.classList.add('dark-theme');
+          }
         } else {
           body.classList.add('dark-theme');
         }
-      } else {
-        body.classList.add('dark-theme');
+        body.style.visibility = 'visible'; // Show now
+      } catch (error) {
+        console.error('Error in initial theme setup:', error);
+        document.body.style.visibility = 'visible'; // Fallback to show page
       }
-      body.style.visibility = 'visible'; // Show now
     })();
   </script>
     <div class="top-bar" id="topBar">
@@ -451,7 +456,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-
         const firebaseConfig = {
             apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
             authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -464,28 +468,25 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default
-
+        let preferences = { notifications: 'email+sms', theme: 'system' }; // Default
         function applyTheme() {
             const body = $('body');
             body.removeClass('dark-theme light-theme system-theme');
             if (preferences.theme === 'light') {
-                body.addClass('light-theme');
+                body.classList.add('light-theme');
             } else if (preferences.theme === 'system') {
-                body.addClass('system-theme');
+                body.classList.add('system-theme');
                 const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
                 if (prefersLight) {
-                    body.addClass('light-theme');
+                    body.classList.add('light-theme');
                 } else {
-                    body.addClass('dark-theme');
+                    body.classList.add('dark-theme');
                 }
             } else {
-                body.addClass('dark-theme');
+                body.classList.add('dark-theme');
             }
             body.css('visibility', 'visible'); // Ensure visible after async apply
         }
-
         // System theme listener
         const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
         mediaQuery.addEventListener('change', (e) => {
@@ -493,7 +494,6 @@
                 applyTheme();
             }
         });
-
         $(document).ready(function() {
             // Fade in hero for subtle polish
             setTimeout(() => {
@@ -507,7 +507,6 @@
                     $('#topBar').removeClass('scrolled');
                 }
             });
-
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     try {
@@ -515,7 +514,7 @@
                         const userDoc = await getDoc(userDocRef);
                         if (userDoc.exists()) {
                             const data = userDoc.data();
-                            preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
+                            preferences = data.preferences || { notifications: 'email+sms', theme: 'system' };
                             localStorage.setItem('preferences', JSON.stringify(preferences)); // Update cache
                         }
                     } catch (error) {
@@ -524,7 +523,6 @@
                 }
                 applyTheme(); // Apply theme whether logged in or not
             });
-
             // Sample trend data (expand with backend)
             const topSelling = [
                 { id: 1, name: 'Turbo Kit for Mustang', price: 499.99, sales: 1200, image: 'turbo.jpg', vehicle: 'mustang', metric: 'Sold 1200+ this month' },
