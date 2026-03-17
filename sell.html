@@ -661,7 +661,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const storage = getStorage(app);
-    let preferences = { notifications: 'email+sms', theme: 'dark' }; // Default preferences
+    let preferences = { notifications: 'email+sms', theme: 'system' }; // Default preferences
     let vehicleData = []; // To store makes and models
 
     function applyTheme() {
@@ -682,8 +682,10 @@
           body.classList.add('dark-theme');
         }
         console.log('Theme applied:', preferences.theme);
+        body.style.visibility = 'visible';
       } catch (error) {
         console.error('Error applying theme:', error);
+        document.body.style.visibility = 'visible';
       }
     }
     // System theme listener
@@ -794,6 +796,7 @@
                 </div>
               `;
             }
+            if (!html) html = '<p>No messages yet.</p>';
             if (!hasUnread && html) {
               html = '<p>No new messages. All conversations are up to date.</p>' + html;
             }
@@ -958,21 +961,26 @@
           }
         });
         onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            try {
+          try {
+            if (user) {
               const userDocRef = doc(db, 'users', user.uid);
               const userDoc = await getDoc(userDocRef);
               if (userDoc.exists()) {
                 const data = userDoc.data();
-                preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
+                preferences = data.preferences || { notifications: 'email+sms', theme: 'system' };
                 localStorage.setItem('preferences', JSON.stringify(preferences));
               }
-            } catch (error) {
-              console.error('Error loading preferences:', error.message);
+              applyTheme();
+              loadDashboardStats(user);
+            } else {
+              // On logout, reset to system theme
+              preferences.theme = 'system';
+              localStorage.setItem('preferences', JSON.stringify(preferences));
+              applyTheme();
+              window.location.href = 'login.html';
             }
-            applyTheme();
-            loadDashboardStats(user);
-          } else {
+          } catch (error) {
+            console.error('Auth state change error:', error);
             window.location.href = 'login.html';
           }
         });
