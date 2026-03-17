@@ -480,24 +480,29 @@
   <script>
     // Sync theme from localStorage BEFORE main script
     (function() {
-      const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
-      const theme = savedPrefs.theme || 'dark';
-      const body = document.body;
-      body.classList.remove('dark-theme', 'light-theme', 'system-theme');
-      if (theme === 'light') {
-        body.classList.add('light-theme');
-      } else if (theme === 'system') {
-        body.classList.add('system-theme');
-        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        if (prefersLight) {
+      try {
+        const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+        const theme = savedPrefs.theme || 'dark';
+        const body = document.body;
+        body.classList.remove('dark-theme', 'light-theme', 'system-theme');
+        if (theme === 'light') {
           body.classList.add('light-theme');
+        } else if (theme === 'system') {
+          body.classList.add('system-theme');
+          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+          if (prefersLight) {
+            body.classList.add('light-theme');
+          } else {
+            body.classList.add('dark-theme');
+          }
         } else {
           body.classList.add('dark-theme');
         }
-      } else {
-        body.classList.add('dark-theme');
+        body.style.visibility = 'visible'; // Show now
+      } catch (error) {
+        console.error('Error in initial theme setup:', error);
+        document.body.style.visibility = 'visible'; // Fallback to show page
       }
-      body.style.visibility = 'visible'; // Show now
     })();
   </script>
   <div class="top-bar" id="topBar">
@@ -660,22 +665,26 @@
     let vehicleData = []; // To store makes and models
 
     function applyTheme() {
-      const body = $('body');
-      body.removeClass('dark-theme light-theme system-theme');
-      if (preferences.theme === 'light') {
-        body.classList.add('light-theme');
-      } else if (preferences.theme === 'system') {
-        body.classList.add('system-theme');
-        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        if (prefersLight) {
+      try {
+        const body = document.body;
+        body.classList.remove('dark-theme', 'light-theme', 'system-theme');
+        if (preferences.theme === 'light') {
           body.classList.add('light-theme');
+        } else if (preferences.theme === 'system') {
+          body.classList.add('system-theme');
+          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+          if (prefersLight) {
+            body.classList.add('light-theme');
+          } else {
+            body.classList.add('dark-theme');
+          }
         } else {
           body.classList.add('dark-theme');
         }
-      } else {
-        body.classList.add('dark-theme');
+        console.log('Theme applied:', preferences.theme);
+      } catch (error) {
+        console.error('Error applying theme:', error);
       }
-      body.style.visibility = 'visible'; // Ensure visible after async apply
     }
     // System theme listener
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -760,10 +769,10 @@
         );
         onSnapshot(threadsQuery, async (snap) => {
           let html = '';
+          let hasUnread = false;
           if (snap.empty) {
             html = '<p>No messages yet.</p>';
           } else {
-            let hasUnread = false;
             for (const threadDoc of snap.docs) {
               const thread = threadDoc.data();
               const threadId = threadDoc.id;
@@ -785,8 +794,9 @@
                 </div>
               `;
             }
-            if (!html) html = '<p>No messages yet.</p>';
-            if (!hasUnread && html) html = '<p>No new messages. All conversations are up to date.</p>' + html;
+            if (!hasUnread && html) {
+              html = '<p>No new messages. All conversations are up to date.</p>' + html;
+            }
           }
           contentElement.html(html);
 
@@ -899,7 +909,7 @@
       if (brand) {
         brand.models.forEach(model => {
           modelSelect.append(`<option value="${model}">${model}</option>`);
-        }
+        });
       }
     }
     async function createListing(userId, year, make, model, title, description, price, images) {
@@ -932,138 +942,143 @@
       }
     }
     $(document).ready(async function() {
-      await fetchVehicleData();
-      populateYears();
-      populateMakes();
+      try {
+        await fetchVehicleData();
+        populateYears();
+        populateMakes();
 
-      setTimeout(() => {
-        $('#sellSection').addClass('visible');
-      }, 300);
-      $(window).scroll(function() {
-        if ($(this).scrollTop() > 50) {
-          $('#topBar').addClass('scrolled');
-        } else {
-          $('#topBar').removeClass('scrolled');
-        }
-      });
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          try {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists()) {
-              const data = userDoc.data();
-              preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
-              localStorage.setItem('preferences', JSON.stringify(preferences));
-            }
-          } catch (error) {
-            console.error('Error loading preferences:', error.message);
+        setTimeout(() => {
+          $('#sellSection').addClass('visible');
+        }, 300);
+        $(window).scroll(function() {
+          if ($(this).scrollTop() > 50) {
+            $('#topBar').addClass('scrolled');
+          } else {
+            $('#topBar').removeClass('scrolled');
           }
-          applyTheme();
-          loadDashboardStats(user);
-        } else {
-          window.location.href = 'login.html';
-        }
-      });
-      $('.accordion-header').on('click', function() {
-        const acc = $(this).parent();
-        acc.toggleClass('active');
-        const icon = $(this).find('.accordion-icon');
-        icon.text(acc.hasClass('active') ? '-' : '+');
-        const headerText = $(this).find('span:first').text().trim();
-        if (headerText === 'Messages' && acc.hasClass('active') && auth.currentUser) {
-          const content = $(this).next('.accordion-content');
-          loadMessages(auth.currentUser.uid, content);
-        }
-      });
-      // Modal handling for create listing
-      const modal = $('#create-modal');
-      const closeBtn = $('#close-modal');
-      const createBtn = $('#create-listing-btn');
-      const form = $('#listing-form');
-      const submitBtn = $('.submit-btn');
-      const imageInput = $('#images');
-      const preview = $('#image-preview');
-      const makeSelect = $('#make');
-      const modelSelect = $('#model');
+        });
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            try {
+              const userDocRef = doc(db, 'users', user.uid);
+              const userDoc = await getDoc(userDocRef);
+              if (userDoc.exists()) {
+                const data = userDoc.data();
+                preferences = data.preferences || { notifications: 'email+sms', theme: 'dark' };
+                localStorage.setItem('preferences', JSON.stringify(preferences));
+              }
+            } catch (error) {
+              console.error('Error loading preferences:', error.message);
+            }
+            applyTheme();
+            loadDashboardStats(user);
+          } else {
+            window.location.href = 'login.html';
+          }
+        });
+        $('.accordion-header').on('click', function() {
+          const acc = $(this).parent();
+          acc.toggleClass('active');
+          const icon = $(this).find('.accordion-icon');
+          icon.text(acc.hasClass('active') ? '-' : '+');
+          const headerText = $(this).find('span:first').text().trim();
+          if (headerText === 'Messages' && acc.hasClass('active') && auth.currentUser) {
+            const content = $(this).next('.accordion-content');
+            loadMessages(auth.currentUser.uid, content);
+          }
+        });
+        // Modal handling for create listing
+        const modal = $('#create-modal');
+        const closeBtn = $('#close-modal');
+        const createBtn = $('#create-listing-btn');
+        const form = $('#listing-form');
+        const submitBtn = $('.submit-btn');
+        const imageInput = $('#images');
+        const preview = $('#image-preview');
+        const makeSelect = $('#make');
+        const modelSelect = $('#model');
 
-      createBtn.on('click', function() {
-        modal.addClass('active');
-      });
+        createBtn.on('click', function() {
+          modal.addClass('active');
+        });
 
-      closeBtn.on('click', function() {
-        modal.removeClass('active');
-        form.trigger('reset');
-        preview.empty();
-        modelSelect.empty().append('<option value="">Select Model</option>');
-        submitBtn.removeClass('success').text('Post Listing').prop('disabled', false);
-      });
-
-      modal.on('click', function(e) {
-        if (e.target === modal[0]) {
+        closeBtn.on('click', function() {
           modal.removeClass('active');
           form.trigger('reset');
           preview.empty();
           modelSelect.empty().append('<option value="">Select Model</option>');
           submitBtn.removeClass('success').text('Post Listing').prop('disabled', false);
-        }
-      });
+        });
 
-      makeSelect.on('change', function() {
-        const selectedMake = $(this).val();
-        if (selectedMake) {
-          populateModels(selectedMake);
-        } else {
-          modelSelect.empty().append('<option value="">Select Model</option>');
-        }
-      });
-
-      imageInput.on('change', function() {
-        preview.empty();
-        const files = this.files;
-        if (files.length > 4) {
-          alert('Max 4 images allowed.');
-          this.value = '';
-          return;
-        }
-        for (const file of files) {
-          const img = $('<img>').attr('src', URL.createObjectURL(file));
-          preview.append(img);
-        }
-      });
-
-      form.on('submit', async function(e) {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (!user) return alert('Please log in.');
-        const year = $('#year').val();
-        const make = $('#make').val();
-        const model = $('#model').val();
-        const title = $('#title').val().trim();
-        const description = $('#description').val().trim();
-        const price = $('#price').val().trim();
-        const images = imageInput[0].files;
-        if (!year || !make || !model || !title || !description || !price) return alert('Please fill all fields.');
-
-        submitBtn.addClass('loading').text('Posting...').prop('disabled', true);
-
-        const success = await createListing(user.uid, year, make, model, title, description, price, images);
-
-        submitBtn.removeClass('loading');
-        if (success) {
-          submitBtn.addClass('success').text('');
-          setTimeout(() => {
+        modal.on('click', function(e) {
+          if (e.target === modal[0]) {
             modal.removeClass('active');
             form.trigger('reset');
             preview.empty();
             modelSelect.empty().append('<option value="">Select Model</option>');
             submitBtn.removeClass('success').text('Post Listing').prop('disabled', false);
-          }, 1500);
-        } else {
-          submitBtn.text('Post Listing').prop('disabled', false);
-          alert('Error creating listing. Please try again.');
-        }
-      });
+          }
+        });
+
+        makeSelect.on('change', function() {
+          const selectedMake = $(this).val();
+          if (selectedMake) {
+            populateModels(selectedMake);
+          } else {
+            modelSelect.empty().append('<option value="">Select Model</option>');
+          }
+        });
+
+        imageInput.on('change', function() {
+          preview.empty();
+          const files = this.files;
+          if (files.length > 4) {
+            alert('Max 4 images allowed.');
+            this.value = '';
+            return;
+          }
+          for (const file of files) {
+            const img = $('<img>').attr('src', URL.createObjectURL(file));
+            preview.append(img);
+          }
+        });
+
+        form.on('submit', async function(e) {
+          e.preventDefault();
+          const user = auth.currentUser;
+          if (!user) return alert('Please log in.');
+          const year = $('#year').val();
+          const make = $('#make').val();
+          const model = $('#model').val();
+          const title = $('#title').val().trim();
+          const description = $('#description').val().trim();
+          const price = $('#price').val().trim();
+          const images = imageInput[0].files;
+          if (!year || !make || !model || !title || !description || !price) return alert('Please fill all fields.');
+
+          submitBtn.addClass('loading').text('Posting...').prop('disabled', true);
+
+          const success = await createListing(user.uid, year, make, model, title, description, price, images);
+
+          submitBtn.removeClass('loading');
+          if (success) {
+            submitBtn.addClass('success').text('');
+            setTimeout(() => {
+              modal.removeClass('active');
+              form.trigger('reset');
+              preview.empty();
+              modelSelect.empty().append('<option value="">Select Model</option>');
+              submitBtn.removeClass('success').text('Post Listing').prop('disabled', false);
+            }, 1500);
+          } else {
+            submitBtn.text('Post Listing').prop('disabled', false);
+            alert('Error creating listing. Please try again.');
+          }
+        });
+      } catch (error) {
+        console.error('Document ready error:', error);
+        document.body.style.visibility = 'visible'; // Fallback
+      }
     });
   </script>
 </body>
