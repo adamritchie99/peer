@@ -482,7 +482,7 @@
     (function() {
       try {
         const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
-        const theme = savedPrefs.theme || 'dark';
+        const theme = savedPrefs.theme || 'system';
         const body = document.body;
         body.classList.remove('dark-theme', 'light-theme', 'system-theme');
         if (theme === 'light') {
