@@ -6,15 +6,86 @@
   <title>Peer Auto - Login</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --text-color: white;
+      --card-bg: #111;
+      --card-border: #333;
+      --pill-bg: #1a1a1a;
+      --pill-border: #444;
+      --link-color: #ddd;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #ccc;
+      --footer-color: #aaa;
+      --modal-bg: #1a1a1a;
+      --modal-border: #444;
+      --input-bg: #111;
+      --input-border: #333;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #444;
+      --btn-hover: #666;
+      --top-bar-bg: rgba(15,15,15,0.92);
+      --top-bar-border: #222;
+      --snapshot-bg: #1a1a1a;
+      --snapshot-border: #444;
+      --details-bg: #1a1a1a;
+      --details-border: #444;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      --stat-bg: #1a1a1a;
+      --stat-border: #444;
+      --accordion-bg: #1a1a1a;
+      --accordion-border: #444;
+      --accordion-hover: #222;
+      --ytd-color: #ccc;
+    }
+    body.light-theme {
+      --bg-color: #f0f0f0;
+      --text-color: #0f0f0f;
+      --card-bg: #fff;
+      --card-border: #ddd;
+      --pill-bg: #f5f5f5;
+      --pill-border: #ccc;
+      --link-color: #333;
+      --accent-color: #ED1C24;
+      --accent-hover: #c4171f;
+      --subtext-color: #666;
+      --footer-color: #555;
+      --modal-bg: #fff;
+      --modal-border: #ddd;
+      --input-bg: #f5f5f5;
+      --input-border: #ccc;
+      --success: #28a745;
+      --error: #dc3545;
+      --btn-bg: #ddd;
+      --btn-hover: #ccc;
+      --top-bar-bg: rgba(240,240,240,0.92);
+      --top-bar-border: #ddd;
+      --snapshot-bg: #f5f5f5;
+      --snapshot-border: #ccc;
+      --details-bg: #f5f5f5;
+      --details-border: #ccc;
+      --logout-shadow: rgba(237, 28, 36, 0.3);
+      --logout-shadow-hover: rgba(237, 28, 36, 0.45);
+      --stat-bg: #f5f5f5;
+      --stat-border: #ccc;
+      --accordion-bg: #f5f5f5;
+      --accordion-border: #ccc;
+      --accordion-hover: #eee;
+      --ytd-color: #666;
+    }
     body, html {
       margin: 0;
       padding: 0;
       min-height: 100vh;
       font-family: system-ui, sans-serif;
-      background: #0f0f0f;
-      color: white;
+      background: var(--bg-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
+      visibility: hidden; /* Hide until theme applied */
     }
     main { flex: 1; display: flex; align-items: center; justify-content: center; }
     /* Top bar */
@@ -26,9 +97,9 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.8rem 1.5rem;
-      background: rgba(15,15,15,0.92);
+      background: var(--top-bar-bg);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--top-bar-border);
       transition: all 0.3s ease;
     }
     .top-bar.scrolled {
@@ -36,7 +107,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }
     .logo a {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
@@ -51,8 +122,8 @@
     }
     .logo a:hover { transform: scale(1.05); }
     .nav-pill {
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: var(--pill-bg);
+      border: 1px solid var(--pill-border);
       border-radius: 50px;
       padding: 0.4rem;
       display: flex;
@@ -60,7 +131,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     .nav-pill a {
-      color: #ddd;
+      color: var(--link-color);
       text-decoration: none;
       font-weight: 600;
       padding: 0.6rem 1.2rem;
@@ -69,15 +140,15 @@
       font-size: clamp(0.95rem, 2.5vw, 1.05rem);
     }
     .nav-pill a:hover, .nav-pill a:focus {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       transform: translateY(-1px);
     }
     .login-section {
       width: 100%;
       max-width: 400px;
-      background: #111;
-      border: 1px solid #333;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 2rem;
       text-align: center;
@@ -96,13 +167,13 @@
       display: flex;
       flex-direction: column;
       font-size: 1rem;
-      color: #ddd;
+      color: var(--link-color);
       text-align: left;
     }
     input {
-      background: #111;
-      border: 1px solid #333;
-      color: white;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-color);
       padding: 0.8rem;
       border-radius: 8px;
       font-size: 1rem;
@@ -120,14 +191,14 @@
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      color: #aaa;
+      color: var(--subtext-color);
       font-size: 1.2rem;
     }
     .eye-icon:hover {
-      color: #ED1C24;
+      color: var(--accent-color);
     }
     button[type="submit"] {
-      background: #ED1C24;
+      background: var(--accent-color);
       color: white;
       border: none;
       padding: 1rem;
@@ -138,7 +209,7 @@
       position: relative;
     }
     button[type="submit"]:hover {
-      background: #c4171f;
+      background: var(--accent-hover);
     }
     /* Spinner styles */
     @keyframes spin {
@@ -162,7 +233,7 @@
       animation: spin 1s linear infinite;
     }
     button.success {
-      background: #28a745;
+      background: var(--success);
     }
     button.success::before {
       content: '✓';
@@ -173,7 +244,7 @@
       font-size: 1.4rem;
     }
     button.error {
-      background: #dc3545;
+      background: var(--error);
     }
     #mfaSection {
       display: none;
@@ -183,7 +254,7 @@
       margin-top: 1rem;
     }
     a {
-      color: #ED1C24;
+      color: var(--accent-color);
       text-decoration: none;
     }
     a:hover {
@@ -193,7 +264,7 @@
       text-align: center;
       padding: 2rem 1rem;
       font-size: 0.9rem;
-      color: #aaa;
+      color: var(--footer-color);
       opacity: 0.7;
       margin-top: auto;
     }
@@ -202,7 +273,35 @@
     }
   </style>
 </head>
-<body>
+<body class="system-theme">
+  <script>
+    // Sync theme from localStorage BEFORE main script
+    (function() {
+      try {
+        const savedPrefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+        const theme = savedPrefs.theme || 'system';
+        const body = document.body;
+        body.classList.remove('dark-theme', 'light-theme', 'system-theme');
+        if (theme === 'light') {
+          body.classList.add('light-theme');
+        } else if (theme === 'system') {
+          body.classList.add('system-theme');
+          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+          if (prefersLight) {
+            body.classList.add('light-theme');
+          } else {
+            body.classList.add('dark-theme');
+          }
+        } else {
+          body.classList.add('dark-theme');
+        }
+        body.style.visibility = 'visible'; // Show now
+      } catch (error) {
+        console.error('Error in initial theme setup:', error);
+        document.body.style.visibility = 'visible'; // Fallback to show page
+      }
+    })();
+  </script>
   <div class="top-bar" id="topBar">
     <div class="logo">
       <a href="index.html">Peer Auto</a>
@@ -246,7 +345,6 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, multiFactor, PhoneAuthProvider, PhoneMultiFactorGenerator, RecaptchaVerifier, getMultiFactorResolver } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyDFG5JTmR8Si1diywYlYPQIQOTTBZwzNK4",
       authDomain: "peer-marketplace-d3f43.firebaseapp.com",
@@ -261,29 +359,24 @@
     let resolver;
     let verificationId = '';
     let recaptchaVerifier;
-
     $(document).ready(function() {
       // Clear fields on load
       setTimeout(() => {
         $('#email').val('');
         $('#password').val('');
       }, 100);
-
       // Eye icon toggle
       $('#togglePassword').on('click', function() {
         const type = $('#password').attr('type') === 'password' ? 'text' : 'password';
         $('#password').attr('type', type);
         this.textContent = type === 'password' ? '👁' : '🙈';
       });
-
       // Init reCAPTCHA
       recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-
       const loginForm = $('#loginForm');
       const loginBtn = loginForm.find('button[type="submit"]');
       const mfaSection = $('#mfaSection');
       const verifyMfaBtn = $('#verifyMfaBtn');
-
       loginForm.on('submit', async function(e) {
         e.preventDefault();
         const email = $('#email').val().trim();
@@ -337,7 +430,6 @@
           }
         }
       });
-
       verifyMfaBtn.on('click', async function() {
         const code = $('#mfaCode').val().trim();
         if (!code || code.length !== 6) {
