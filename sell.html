@@ -663,9 +663,9 @@
       const body = $('body');
       body.removeClass('dark-theme light-theme system-theme');
       if (preferences.theme === 'light') {
-        body.addClass('light-theme');
+        body.classList.add('light-theme');
       } else if (preferences.theme === 'system') {
-        body.addClass('system-theme');
+        body.classList.add('system-theme');
         const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
         if (prefersLight) {
           body.classList.add('light-theme');
@@ -675,7 +675,7 @@
       } else {
         body.classList.add('dark-theme');
       }
-      body.css('visibility', 'visible'); // Ensure visible after async apply
+      body.style.visibility = 'visible'; // Show now
     }
     // System theme listener
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -695,7 +695,7 @@
         );
         onSnapshot(listingsQuery, (snap) => {
           $('.stat-card:nth-child(1) h3').text(snap.size);
-        });
+        }, (error) => console.error('Listings query error:', error));
 
         // Earnings from listings
         const now = new Date();
@@ -712,7 +712,7 @@
           let monthlyEarned = 0;
           snap.forEach((doc) => { monthlyEarned += doc.data().price || 0; });
           $('.stat-card.earnings h3').text(`$${monthlyEarned.toLocaleString()}`);
-        });
+        }, (error) => console.error('Monthly earnings query error:', error));
 
         const ytdListingsQuery = query(
           collection(db, 'listings'),
@@ -724,7 +724,7 @@
           let ytdEarned = 0;
           snap.forEach((doc) => { ytdEarned += doc.data().price || 0; });
           $('.stat-card.earnings .ytd').text(`Year to Date: $${ytdEarned.toLocaleString()}`);
-        });
+        }, (error) => console.error('YTD earnings query error:', error));
 
         // Orders to Ship
         const ordersQuery = query(
@@ -735,7 +735,7 @@
         );
         onSnapshot(ordersQuery, (snap) => {
           $('.stat-card:nth-child(3) h3').text(snap.size);
-        });
+        }, (error) => console.error('Orders query error:', error));
 
         // New Messages - Count unread
         const unreadQuery = query(
@@ -745,7 +745,7 @@
         );
         onSnapshot(unreadQuery, (snap) => {
           $('.stat-card:nth-child(4) h3').text(snap.size);
-        });
+        }, (error) => console.error('Unread messages query error:', error));
       } catch (error) {
         console.error('Error loading dashboard stats:', error);
       }
@@ -763,6 +763,7 @@
           if (snap.empty) {
             html = '<p>No messages yet.</p>';
           } else {
+            let hasUnread = false;
             for (const threadDoc of snap.docs) {
               const thread = threadDoc.data();
               const threadId = threadDoc.id;
@@ -770,6 +771,7 @@
               const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
               const otherUserName = otherUserDoc.exists() ? otherUserDoc.data().displayName || 'User' : 'Unknown';
               const unreadCount = thread.unreadCountForUser?.[userId] || 0;
+              if (unreadCount > 0) hasUnread = true;
               html += `
                 <div class="message-thread" data-thread-id="${threadId}">
                   <p><strong>${otherUserName}</strong> (Unread: ${unreadCount})</p>
@@ -783,7 +785,8 @@
                 </div>
               `;
             }
-            if (!html) html = '<p>No new messages. All conversations are up to date.</p>';
+            if (!html) html = '<p>No messages yet.</p>';
+            if (!hasUnread && html) html = '<p>No new messages. All conversations are up to date.</p>' + html;
           }
           contentElement.html(html);
 
@@ -968,9 +971,9 @@
         const icon = $(this).find('.accordion-icon');
         icon.text(acc.hasClass('active') ? '-' : '+');
         const headerText = $(this).find('span:first').text().trim();
-        if (headerText === 'Messages' && acc.hasClass('active')) {
+        if (headerText === 'Messages' && acc.hasClass('active') && auth.currentUser) {
           const content = $(this).next('.accordion-content');
-          loadMessages(auth.currentUser?.uid, content);
+          loadMessages(auth.currentUser.uid, content);
         }
       });
       // Modal handling for create listing
