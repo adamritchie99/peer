@@ -675,7 +675,7 @@
       } else {
         body.classList.add('dark-theme');
       }
-      body.style.visibility = 'visible'; // Show now
+      body.style.visibility = 'visible'; // Ensure visible after async apply
     }
     // System theme listener
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -813,7 +813,7 @@
               threadElem.find('textarea').val('');
             }
           });
-        });
+        }, (error) => console.error('Threads query error:', error));
       } catch (error) {
         console.error('Error loading messages:', error);
         contentElement.html('<p>Error loading messages.</p>');
@@ -846,7 +846,7 @@
         }
         html += '</ul>';
         container.html(html);
-      });
+      }, (error) => console.error('Messages query error:', error));
     }
     async function sendMessage(threadId, senderId, text) {
       const threadRef = doc(db, 'threads', threadId);
@@ -899,7 +899,7 @@
       if (brand) {
         brand.models.forEach(model => {
           modelSelect.append(`<option value="${model}">${model}</option>`);
-        });
+        }
       }
     }
     async function createListing(userId, year, make, model, title, description, price, images) {
